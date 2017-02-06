@@ -1,0 +1,1103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-06 16:42:50">
+<Class name="SamplePrj.PierogiDelivery.Data.Clients">
+<Super>%Persistent,%Populate</Super>
+<TimeChanged>64320,50897.576437</TimeChanged>
+<TimeCreated>64317,40075.374598</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+</Property>
+
+<Property name="Street">
+<Type>%String</Type>
+</Property>
+
+<Property name="City">
+<Type>%String</Type>
+</Property>
+
+<Property name="Orderes">
+<Type>SamplePrj.PierogiDelivery.Data.Order</Type>
+<Cardinality>children</Cardinality>
+<Inverse>Client</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^SamplePrj.Pierogi5322.ClientsD</DataLocation>
+<DefaultData>ClientsDefaultData</DefaultData>
+<IdLocation>^SamplePrj.Pierogi5322.ClientsD</IdLocation>
+<IndexLocation>^SamplePrj.Pierogi5322.ClientsI</IndexLocation>
+<StreamLocation>^SamplePrj.Pierogi5322.ClientsS</StreamLocation>
+<ExtentSize>1000</ExtentSize>
+<Data name="ClientsDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+<Value name="3">
+<Value>Street</Value>
+</Value>
+<Value name="4">
+<Value>City</Value>
+</Value>
+</Data>
+<Property name="%%CLASSNAME">
+<Selectivity>0.1000%</Selectivity>
+<OutlierSelectivity>.992632:</OutlierSelectivity>
+</Property>
+<Property name="City">
+<Selectivity>3.7436%</Selectivity>
+</Property>
+<Property name="Name">
+<Selectivity>0.1000%</Selectivity>
+</Property>
+<Property name="Street">
+<Selectivity>0.1000%</Selectivity>
+</Property>
+<SQLMap name="IDKEY">
+<BlockCount>-32</BlockCount>
+</SQLMap>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Data.Flavors">
+<Super>%Persistent</Super>
+<TimeChanged>64317,54289.303531</TimeChanged>
+<TimeCreated>64317,38590.488901</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+</Property>
+
+<Property name="Price">
+<Type>%Numeric</Type>
+</Property>
+
+<Index name="FindName">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Property name="Meals">
+<Type>SamplePrj.PierogiDelivery.Data.Order</Type>
+<Cardinality>many</Cardinality>
+<Inverse>Pierogis</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Method name="Seeds">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+			
+		$$$THROWONERROR(tSC, ..%KillExtent())
+		Set Flavors = $ListFromString("Duck & Pears;Sweet Potato;Savory Chuck Roast;Sauerkraut & Onion;Potato with Onion;Potato with Jalapeno Cheese;Ricotta with Spinach & Roasted Garlic;Farmer's Cheese with Onion & Chives;Buffalo Chicken;Cheesy & Spinach;Farmer's Cheese;Garlic, Smashed Potato;Potato & Cheddar;Potato, Cheddar & Bacon;Pulled Pork;Sauerkraut;Sauerkraut & Mushroom;Plum;Smoked, Ham, Sausage and Cheese;Mushroom;Bolognese;Smoked, chicken & Cheese;Chilli & Cheese;Sweet Cheese;Ruskie;Blueberries;Apples;Meat & Cheese;Bryndza Cheese;Schlutzkrapfen;Bacon",";")
+		
+		For k=1:1:$ListLength(Flavors){
+			$$$THROWONERROR(tSC, ..%New($List(Flavors,k), ##class(cosFaker.Finance).Amount(3,14,,".")).%Save())
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="%OnNew">
+<FormalSpec>pFlavorName:%String,pPrice:%Numeric</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set ..Name = pFlavorName,
+		..Price = pPrice
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^SamplePrj.Pierogi5322.FlavorsD</DataLocation>
+<DefaultData>FlavorsDefaultData</DefaultData>
+<IdLocation>^SamplePrj.Pierogi5322.FlavorsD</IdLocation>
+<IndexLocation>^SamplePrj.Pierogi5322.FlavorsI</IndexLocation>
+<StreamLocation>^SamplePrj.Pierogi5322.FlavorsS</StreamLocation>
+<Data name="FlavorsDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+<Value name="3">
+<Value>Price</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Data.Order">
+<Super>%Persistent</Super>
+<TimeChanged>64320,53529.490336</TimeChanged>
+<TimeCreated>64317,54182.301627</TimeCreated>
+
+<Property name="OrderedAt">
+<Type>%DateTime</Type>
+</Property>
+
+<Property name="Quantity">
+<Type>%Integer</Type>
+</Property>
+
+<Property name="TotalPrice">
+<Type>%Numeric</Type>
+</Property>
+
+<Property name="Client">
+<Type>SamplePrj.PierogiDelivery.Data.Clients</Type>
+<Cardinality>parent</Cardinality>
+<Inverse>Orderes</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Property name="Pierogis">
+<Type>SamplePrj.PierogiDelivery.Data.Flavors</Type>
+<Cardinality>one</Cardinality>
+<Inverse>Meals</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Index name="PierogisIndex">
+<Properties>Pierogis</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>{%%PARENT}("Orderes")</DataLocation>
+<DefaultData>OrderDefaultData</DefaultData>
+<IdLocation>^SamplePrj.Pierogi5322.ClientsC("Orderes")</IdLocation>
+<IndexLocation>^SamplePrj.PierogiDe5322.OrderI</IndexLocation>
+<StreamLocation>^SamplePrj.PierogiDe5322.OrderS</StreamLocation>
+<Data name="OrderDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Pierogis</Value>
+</Value>
+<Value name="3">
+<Value>OrderedAt</Value>
+</Value>
+<Value name="4">
+<Value>Quantity</Value>
+</Value>
+<Value name="5">
+<Value>TotalPrice</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Pierogi">
+<Super>Ens.Response</Super>
+<TimeChanged>64320,38915.618149</TimeChanged>
+<TimeCreated>64320,38915.391989</TimeCreated>
+
+<Property name="FlavorId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Price">
+<Type>%Numeric</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>PierogiDefaultData</DefaultData>
+<Data name="PierogiDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Pierogi"</Subscript>
+<Value name="1">
+<Value>FlavorId</Value>
+</Value>
+<Value name="2">
+<Value>Price</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Req.Client">
+<Super>Ens.Request</Super>
+<TimeChanged>64317,56041.66523</TimeChanged>
+<TimeCreated>64317,55534.477193</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+</Property>
+
+<Property name="Street">
+<Type>%String</Type>
+</Property>
+
+<Property name="City">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ClientDefaultData</DefaultData>
+<Data name="ClientDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Client"</Subscript>
+<Value name="1">
+<Value>Name</Value>
+</Value>
+<Value name="2">
+<Value>Street</Value>
+</Value>
+<Value name="3">
+<Value>City</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Req.Invoice">
+<Super>Ens.Request</Super>
+<TimeChanged>64320,38469.990975</TimeChanged>
+<TimeCreated>64320,38469.72881</TimeCreated>
+
+<Property name="Flavor">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>InvoiceDefaultData</DefaultData>
+<Data name="InvoiceDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Invoice"</Subscript>
+<Value name="1">
+<Value>Flavor</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Req.Order">
+<Super>Ens.Request</Super>
+<TimeChanged>64317,56187.314408</TimeChanged>
+<TimeCreated>64317,55172.568931</TimeCreated>
+
+<Property name="ClientName">
+<Type>%String</Type>
+</Property>
+
+<Property name="ClientStreet">
+<Type>%String</Type>
+</Property>
+
+<Property name="ClientCity">
+<Type>%String</Type>
+</Property>
+
+<Property name="Quantity">
+<Type>%Integer</Type>
+</Property>
+
+<Property name="PierogiFlavor">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>OrderDefaultData</DefaultData>
+<Data name="OrderDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Order"</Subscript>
+<Value name="1">
+<Value>ClientName</Value>
+</Value>
+<Value name="2">
+<Value>ClientStreet</Value>
+</Value>
+<Value name="3">
+<Value>ClientCity</Value>
+</Value>
+<Value name="4">
+<Value>Quantity</Value>
+</Value>
+<Value name="5">
+<Value>PierogiFlavor</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Resp.Client">
+<Super>Ens.Response</Super>
+<TimeChanged>64317,55572.21927</TimeChanged>
+<TimeCreated>64317,55571.970289</TimeCreated>
+
+<Property name="ClientId">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ClientDefaultData</DefaultData>
+<Data name="ClientDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Client"</Subscript>
+<Value name="1">
+<Value>ClientId</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Resp.Invoice">
+<Super>Ens.Response</Super>
+<TimeChanged>64320,40730.520809</TimeChanged>
+<TimeCreated>64320,39869.360611</TimeCreated>
+
+<Property name="TotalPrice">
+<Type>%Numeric</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>InvoiceDefaultData</DefaultData>
+<Data name="InvoiceDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Invoice"</Subscript>
+<Value name="1">
+<Value>TotalPrice</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Message.Resp.Pierogi">
+<Super>Ens.Response</Super>
+<TimeChanged>64320,40066.102191</TimeChanged>
+<TimeCreated>64320,38915.391989</TimeCreated>
+
+<Property name="FlavorId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Price">
+<Type>%Numeric</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>PierogiDefaultData</DefaultData>
+<Data name="PierogiDefaultData">
+<Subscript>"Pierogi"</Subscript>
+<Value name="1">
+<Value>FlavorId</Value>
+</Value>
+<Value name="2">
+<Value>Price</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Checkout.Req">
+<Super>Ens.Request</Super>
+<TimeChanged>64320,53463.992662</TimeChanged>
+<TimeCreated>64320,41263.980687</TimeCreated>
+
+<Property name="ClientId">
+<Type>%String</Type>
+</Property>
+
+<Property name="FlavorId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Quantity">
+<Type>%Integer</Type>
+</Property>
+
+<Property name="TotalPrice">
+<Type>%Numeric</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ReqDefaultData</DefaultData>
+<Data name="ReqDefaultData">
+<Subscript>"Req"</Subscript>
+<Value name="1">
+<Value>ClientId</Value>
+</Value>
+<Value name="2">
+<Value>FlavorId</Value>
+</Value>
+<Value name="3">
+<Value>Quantity</Value>
+</Value>
+<Value name="4">
+<Value>TotalPrice</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Checkout.Resp">
+<Super>Ens.Response</Super>
+<TimeChanged>64320,55667.634036</TimeChanged>
+<TimeCreated>64320,55193.718236</TimeCreated>
+
+<Property name="OrderId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Status">
+<Type>%Status</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>RespDefaultData</DefaultData>
+<Data name="RespDefaultData">
+<Subscript>"Resp"</Subscript>
+<Value name="1">
+<Value>Status</Value>
+</Value>
+<Value name="2">
+<Value>OrderId</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Checkout">
+<Super>Ens.BusinessOperation</Super>
+<TimeChanged>64320,56945.633062</TimeChanged>
+<TimeCreated>64320,41005.670125</TimeCreated>
+
+<Parameter name="INVOCATION">
+<Default>Queue</Default>
+</Parameter>
+
+<Method name="ProcessOrder">
+<FormalSpec>pInput:SamplePrj.PierogiDelivery.Operation.Checkout.Req,*pResponse:SamplePrj.PierogiDelivery.Operation.Checkout.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, 
+		pResponse = ##class(SamplePrj.PierogiDelivery.Operation.Checkout.Resp).%New()
+		
+	Try {
+		Set tOrder = ##class(SamplePrj.PierogiDelivery.Data.Order).%New(), 
+			tOrder.Quantity = pInput.Quantity, 
+			tOrder.TotalPrice = pInput.TotalPrice,
+			tOrder.OrderedAt = $ZDateTime($Horolog,3),
+			tClient = ##class(SamplePrj.PierogiDelivery.Data.Clients).%OpenId(pInput.ClientId),
+			tFlavor = ##class(SamplePrj.PierogiDelivery.Data.Flavors).%OpenId(pInput.FlavorId)
+		
+		$$$THROWONERROR(tSC, tClient.Orderes.Insert(tOrder))
+		$$$THROWONERROR(tSC, tFlavor.Meals.Insert(tOrder))
+		$$$THROWONERROR(tSC, tClient.%Save())
+		$$$THROWONERROR(tSC, tFlavor.%Save())
+		
+		$$$THROWONERROR(tSC, tOrder.%Save())
+		Set pResponse.OrderId = tOrder.%Id()
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Set pResponse.Status = tSC
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<XData name="MessageMap">
+<Data><![CDATA[
+<MapItems>
+	<MapItem MessageType="SamplePrj.PierogiDelivery.Operation.Checkout.Req">
+		<Method>ProcessOrder</Method>
+	</MapItem>
+</MapItems>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Client.Req">
+<Super>SamplePrj.PierogiDelivery.Message.Req.Client</Super>
+<TimeChanged>64317,57319.956262</TimeChanged>
+<TimeCreated>64317,57319.733301</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Client.Resp">
+<Super>SamplePrj.PierogiDelivery.Message.Resp.Client</Super>
+<TimeChanged>64317,57389.317327</TimeChanged>
+<TimeCreated>64317,57343.662826</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Client">
+<Super>Ens.BusinessOperation</Super>
+<TimeChanged>64320,35328.376094</TimeChanged>
+<TimeCreated>64317,57264.217233</TimeCreated>
+
+<Parameter name="INVOCATION">
+<Default>Queue</Default>
+</Parameter>
+
+<Parameter name="ADAPTER">
+<Default>EnsLib.SQL.OutboundAdapter</Default>
+</Parameter>
+
+<Property name="Adapter">
+<Type>EnsLib.SQL.OutboundAdapter</Type>
+</Property>
+
+<Parameter name="SETTINGS">
+<Default>ReplyCodeActions,RetryInterval,AlertRetryGracePeriod:Alerting,FailureTimeout,QueueCountAlert:Alerting</Default>
+</Parameter>
+
+<Method name="GetClientId">
+<FormalSpec>pInput:SamplePrj.PierogiDelivery.Operation.Client.Req,*pResponse:SamplePrj.PierogiDelivery.Operation.Client.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	$$$TRACE("GetClient")
+	Try {
+		$$$TRACE(pInput.Name)
+		Set pResponse = ##class(SamplePrj.PierogiDelivery.Operation.Client.Resp).%New()
+		
+		Set tSql = "Select TOP 1 ID as Client FROM SamplePrj_PierogiDelivery_Data.Clients "_
+			" WHERE Name %StartsWith ? AND Street Like ? AND City = ?",
+			tStatement =  ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		
+		Set tRS = tStatement.execute(pInput.Name, pInput.Street, pInput.City)
+		
+		$$$THROWONERROR(tSC, tRS.%Next())
+		Set pResponse.ClientId = tRS.%Get("Client")
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<XData name="MessageMap">
+<Data><![CDATA[
+<MapItems>
+	<MapItem MessageType="SamplePrj.PierogiDelivery.Operation.Client.Req">
+		<Method>GetClientId</Method>
+	</MapItem>
+</MapItems>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Invoice.Req">
+<Super>Ens.Request</Super>
+<TimeChanged>64320,39728.162984</TimeChanged>
+<TimeCreated>64320,39727.962338</TimeCreated>
+
+<Property name="Quantity">
+<Type>%Integer</Type>
+</Property>
+
+<Property name="Price">
+<Type>%Numeric</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ReqDefaultData</DefaultData>
+<Data name="ReqDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Req"</Subscript>
+<Value name="1">
+<Value>Quantity</Value>
+</Value>
+<Value name="2">
+<Value>Price</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Invoice.Resp">
+<Super>SamplePrj.PierogiDelivery.Message.Resp.Invoice</Super>
+<TimeChanged>64320,40742.628437</TimeChanged>
+<TimeCreated>64320,39869.360611</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Invoice">
+<Super>Ens.BusinessOperation</Super>
+<TimeChanged>64320,39930.146527</TimeChanged>
+<TimeCreated>64320,36966.37239</TimeCreated>
+
+<Parameter name="INVOCATION">
+<Default>Queue</Default>
+</Parameter>
+
+<Method name="GetTotal">
+<FormalSpec>pInput:SamplePrj.PierogiDelivery.Operation.Invoice.Req,*pResponse:SamplePrj.PierogiDelivery.Operation.Invoice.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pResponse = ##class(SamplePrj.PierogiDelivery.Operation.Invoice.Resp).%New(),
+			pResponse.TotalPrice = pInput.Price * pInput.Quantity
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<XData name="MessageMap">
+<Data><![CDATA[
+<MapItems>
+	<MapItem MessageType="SamplePrj.PierogiDelivery.Operation.Invoice.Req">
+		<Method>GetTotal</Method>
+	</MapItem>
+</MapItems>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Price.Req">
+<Super>SamplePrj.PierogiDelivery.Message.Req.Invoice</Super>
+<TimeChanged>64320,38497.387907</TimeChanged>
+<TimeCreated>64320,37113.213415</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Price.Resp">
+<Super>SamplePrj.PierogiDelivery.Message.Resp.Pierogi</Super>
+<TimeChanged>64320,38983.640637</TimeChanged>
+<TimeCreated>64320,37127.107319</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>RespDefaultData</DefaultData>
+<Data name="RespDefaultData">
+<Subscript>"Resp"</Subscript>
+<Value name="1">
+<Value>Price</Value>
+</Value>
+<Value name="2">
+<Value>FlavorId</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Operation.Price">
+<Super>Ens.BusinessOperation</Super>
+<TimeChanged>64320,37739.147423</TimeChanged>
+<TimeCreated>64320,37001.009179</TimeCreated>
+
+<Parameter name="INVOCATION">
+<Default>Queue</Default>
+</Parameter>
+
+<Method name="GetPrice">
+<FormalSpec>pInput:SamplePrj.PierogiDelivery.Operation.Price.Req,*pResponse:SamplePrj.PierogiDelivery.Operation.Price.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+			Set tFlavor = ##class(SamplePrj.PierogiDelivery.Data.Flavors).FindNameOpen(pInput.Flavor),
+				pResponse = ##class(SamplePrj.PierogiDelivery.Operation.Price.Resp).%New(),
+				pResponse.Price = tFlavor.Price,
+				pResponse.FlavorId = tFlavor.%Id()
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<XData name="MessageMap">
+<Data><![CDATA[
+<MapItems>
+	<MapItem MessageType="SamplePrj.PierogiDelivery.Operation.Price.Req">
+		<Method>GetPrice</Method>
+	</MapItem>
+</MapItems>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Client.Req">
+<Super>SamplePrj.PierogiDelivery.Message.Req.Client</Super>
+<TimeChanged>64317,56148.034026</TimeChanged>
+<TimeCreated>64317,56147.829597</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Client.Resp">
+<Super>SamplePrj.PierogiDelivery.Message.Resp.Client</Super>
+<TimeChanged>64320,31666.356797</TimeChanged>
+<TimeCreated>64320,31665.976287</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Client">
+<ClassType>persistent</ClassType>
+<Super>Ens.BusinessProcess</Super>
+<TimeChanged>64320,35339.351005</TimeChanged>
+<TimeCreated>64317,55993.654607</TimeCreated>
+
+<Method name="OnRequest">
+<FormalSpec>pRequest:SamplePrj.PierogiDelivery.Process.Client.Req,*pResponse:SamplePrj.PierogiDelivery.Operation.Client.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set tClient = ##class(SamplePrj.PierogiDelivery.Operation.Client.Req).%New(),
+			tClient.Name = pRequest.Name, 
+			tClient.City = pRequest.City, 
+			tClient.Street = pRequest.Street,
+			pResponse = ##class(SamplePrj.PierogiDelivery.Operation.Client.Resp).%New()
+		$$$THROWONERROR(tSC, tClient.%Save())
+		$$$THROWONERROR(tSC, ..SendRequestSync("boClient", tClient, .pResponse))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Invoice.Req">
+<Super>SamplePrj.PierogiDelivery.Message.Req.Invoice</Super>
+<TimeChanged>64320,39579.968223</TimeChanged>
+<TimeCreated>64320,38368.532022</TimeCreated>
+
+<Property name="Quantity">
+<Type>%Integer</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ReqDefaultData</DefaultData>
+<Data name="ReqDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Req"</Subscript>
+<Value name="1">
+<Value>Quantity</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Invoice.Resp">
+<Super>SamplePrj.PierogiDelivery.Message.Resp.Pierogi</Super>
+<TimeChanged>64320,40123.718991</TimeChanged>
+<TimeCreated>64320,40101.153922</TimeCreated>
+
+<Property name="TotalPrice">
+<Type>%Numeric</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>RespDefaultData</DefaultData>
+<Data name="RespDefaultData">
+<Structure>listnode</Structure>
+<Subscript>"Resp"</Subscript>
+<Value name="1">
+<Value>TotalPrice</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Invoice">
+<ClassType>persistent</ClassType>
+<Super>Ens.BusinessProcess</Super>
+<TimeChanged>64320,49465.452972</TimeChanged>
+<TimeCreated>64320,38210.138049</TimeCreated>
+
+<Method name="OnRequest">
+<FormalSpec>pRequest:SamplePrj.PierogiDelivery.Process.Invoice.Req,*pResponse:SamplePrj.PierogiDelivery.Process.Invoice.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pResponse = ##class(SamplePrj.PierogiDelivery.Process.Invoice.Resp).%New(),
+			tPierogi = ##class(SamplePrj.PierogiDelivery.Operation.Price.Req).%New(),
+			tPierogi.Flavor = pRequest.Flavor
+			
+		$$$THROWONERROR(tSC, ..SendRequestSync("boPrice", tPierogi, .pPierogi))
+		
+		Set tInvoice = ##class(SamplePrj.PierogiDelivery.Operation.Invoice.Req).%New(),
+			tInvoice.Price = pPierogi.Price,
+			tInvoice.Quantity = pRequest.Quantity
+			
+		$$$THROWONERROR(tSC, ..SendRequestSync("boInvoice", tInvoice, .pInvoice))
+		
+		Set pResponse.FlavorId = pPierogi.FlavorId, 
+			pResponse.Price = pPierogi.Price, 
+			pResponse.TotalPrice = pInvoice.TotalPrice
+			
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Order.Req">
+<Super>SamplePrj.PierogiDelivery.Message.Req.Order</Super>
+<TimeChanged>64317,56220.374516</TimeChanged>
+<TimeCreated>64317,55224.098163</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Order.Resp">
+<Super>SamplePrj.PierogiDelivery.Message.Resp.Client,SamplePrj.PierogiDelivery.Message.Resp.Pierogi,SamplePrj.PierogiDelivery.Message.Resp.Invoice</Super>
+<TimeChanged>64320,55609.376115</TimeChanged>
+<TimeCreated>64320,40630.054621</TimeCreated>
+
+<Property name="Status">
+<Type>%Status</Type>
+</Property>
+
+<Property name="OrderId">
+<Type>%String</Type>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>RespDefaultData</DefaultData>
+<Data name="RespDefaultData">
+<Subscript>"Resp"</Subscript>
+<Value name="1">
+<Value>TotalPrice</Value>
+</Value>
+<Value name="2">
+<Value>FlavorId</Value>
+</Value>
+<Value name="3">
+<Value>Price</Value>
+</Value>
+<Value name="4">
+<Value>OrderId</Value>
+</Value>
+<Value name="5">
+<Value>Status</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Process.Order">
+<ClassType>persistent</ClassType>
+<Super>Ens.BusinessProcess</Super>
+<TimeChanged>64320,59394.522174</TimeChanged>
+<TimeCreated>64317,55090.553299</TimeCreated>
+
+<Method name="OnRequest">
+<FormalSpec>pRequest:SamplePrj.PierogiDelivery.Process.Order.Req,*pResponse:SamplePrj.PierogiDelivery.Process.Order.Resp</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK,
+		pResponse = ##class(SamplePrj.PierogiDelivery.Process.Order.Resp).%New()
+		
+	Try {
+		Set tClient = ##class(SamplePrj.PierogiDelivery.Process.Client.Req).%New(), 
+			tClient.City 		= pRequest.ClientCity, 
+			tClient.Name 		= pRequest.ClientName, 
+			tClient.Street 		= pRequest.ClientStreet, 
+			tInvoice 			= ##class(SamplePrj.PierogiDelivery.Process.Invoice.Req).%New(),
+			tInvoice.Quantity 	= pRequest.Quantity,
+			tInvoice.Flavor 	= pRequest.PierogiFlavor
+						
+		$$$THROWONERROR(tSC, tClient.%Save())
+		$$$THROWONERROR(tSC, tInvoice.%Save())
+		
+		$$$THROWONERROR(tSC, ..SendRequestSync("bpClient", tClient, .pClient))
+		$$$THROWONERROR(tSC, ..SendRequestSync("bpInvoice", tInvoice, .pPierogi))
+		
+		Set tCheckout = ##class(SamplePrj.PierogiDelivery.Operation.Checkout.Req).%New(),
+			tCheckout.ClientId 	= pClient.ClientId,
+			tCheckout.FlavorId 	= pPierogi.FlavorId,
+			tCheckout.Quantity 	= pRequest.Quantity,
+			tCheckout.TotalPrice= pPierogi.TotalPrice
+			
+		$$$TRACE("going to Checkout")
+		$$$THROWONERROR(tSC, ..SendRequestSync("boCheckout", tCheckout,.pResp))
+		
+		Set pResponse.Status 	= pResp.Status, 
+			pResponse.OrderId 	= pResp.OrderId,
+			pResponse.ClientId 	= pClient.ClientId,
+			pResponse.FlavorId 	= pPierogi.FlavorId,
+			pResponse.Price 	= pPierogi.Price,
+			pResponse.TotalPrice= pPierogi.TotalPrice
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		$$$TRACE("We Got Problems: "_ $System.Status.GetErrorText(tSC))
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Production.System">
+<Super>Ens.Production</Super>
+<TimeChanged>64320,50093.821584</TimeChanged>
+<TimeCreated>64317,55694.9316</TimeCreated>
+
+<XData name="ProductionDefinition">
+<Data><![CDATA[
+<Production Name="SamplePrj.PierogiDelivery.Production.System" TestingEnabled="true" LogGeneralTraceEvents="false">
+  <Description></Description>
+  <ActorPoolSize>2</ActorPoolSize>
+  <Item Name="bsOrder" Category="" ClassName="SamplePrj.PierogiDelivery.Service.Order" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="bpOrder" Category="Order" ClassName="SamplePrj.PierogiDelivery.Process.Order" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
+  </Item>
+  <Item Name="bpClient" Category="Client" ClassName="SamplePrj.PierogiDelivery.Process.Client" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
+  </Item>
+  <Item Name="boClient" Category="Client" ClassName="SamplePrj.PierogiDelivery.Operation.Client" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
+  </Item>
+  <Item Name="boPrice" Category="Pierogi,Order" ClassName="SamplePrj.PierogiDelivery.Operation.Price" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="bpInvoice" Category="Order" ClassName="SamplePrj.PierogiDelivery.Process.Invoice" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="boCheckout" Category="Order" ClassName="SamplePrj.PierogiDelivery.Operation.Checkout" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="boInvoice" Category="Order" ClassName="SamplePrj.PierogiDelivery.Operation.Invoice" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  </Item>
+</Production>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Service.Order.Req">
+<Super>SamplePrj.PierogiDelivery.Message.Req.Order</Super>
+<TimeChanged>64317,56266.485633</TimeChanged>
+<TimeCreated>64317,52100.145881</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+</Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Service.Order">
+<Super>Ens.BusinessService</Super>
+<TimeChanged>64317,54957.592334</TimeChanged>
+<TimeCreated>64317,51937.119728</TimeCreated>
+
+<Parameter name="ADAPTER">
+<Default>Ens.InboundAdapter</Default>
+</Parameter>
+
+<Property name="Adapter">
+<Type>Ens.InboundAdapter</Type>
+</Property>
+
+<Method name="OnProcessInput">
+<FormalSpec>pInput:SamplePrj.PierogiDelivery.Service.Order.Req,*pOutput:%RegisteredObject</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		
+		Set tRequest = ##Class(SamplePrj.PierogiDelivery.Service.Order.Req).%New(), 
+			tRequest = pInput
+		Set tSC = ..SendRequestAsync("bpOrder", tRequest, .pOutput)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+</Class>
+</Export>
