@@ -13,5 +13,9 @@ ClassMethod RunTimeInfo(pTargetDispatchName As %String, Output pConfigName As %S
 	Quit tSC
 }
 
+ClassMethod IsAService()
+{
+}
+
 }
 

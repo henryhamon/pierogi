@@ -20,5 +20,12 @@ Method TestGetRunTimeInfo()
 	Do ..ItShouldBeEqual(tClassName,"SamplePrj.PierogiDelivery.Service.Order")
 }
 
+Method TestValidEnsembleObject()
+{
+	Do ..ItShouldBeOk(##class(Pierogi.core.Ensemble).RunTimeInfo("bsOk",.tConfigName,.tClassName))
+	Do ..ItShouldBeEqual(tConfigName,"")
+	Do ..ItShouldBeEqual(tClassName,"")
+}
+
 }
 
