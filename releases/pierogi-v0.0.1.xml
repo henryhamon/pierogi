@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-07 13:57:16">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-07 14:13:53">
 <Class name="Pierogi.core.Ensemble">
-<TimeChanged>64321,50209.028976</TimeChanged>
+<TimeChanged>64321,51195.416284</TimeChanged>
 <TimeCreated>64321,32618.767087</TimeCreated>
 
 <Method name="RunTimeInfo">
@@ -23,6 +23,18 @@
 
 <Method name="IsAService">
 <ClassMethod>1</ClassMethod>
+<FormalSpec>pClassName:%String</FormalSpec>
+<ReturnType>%Boolean</ReturnType>
+<Implementation><![CDATA[
+	Set tResult = $$$NO
+	Try {
+		Set class = ##class(%Dictionary.ClassDefinition).%OpenId(pClassName)
+		Set:($IsObject(class)&&($Find(class.Super,"Ens.BusinessService")>0)) tResult = $$$YES
+	} Catch tException {
+		Set tResult = $$$NO
+	}
+	Quit tResult
+]]></Implementation>
 </Method>
 </Class>
 </Export>

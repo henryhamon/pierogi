@@ -14,8 +14,16 @@ ClassMethod RunTimeInfo(pTargetDispatchName As %String, Output pConfigName As %S
 	Quit tSC
 }
 
-ClassMethod IsAService()
+ClassMethod IsAService(pClassName As %String) As %Boolean
 {
+	Set tResult = $$$NO
+	Try {
+		Set class = ##class(%Dictionary.ClassDefinition).%OpenId(pClassName)
+		Set:($IsObject(class)&&($Find(class.Super,"Ens.BusinessService")>0)) tResult = $$$YES
+	} Catch tException {
+		Set tResult = $$$NO
+	}
+	Quit tResult
 }
 
 }

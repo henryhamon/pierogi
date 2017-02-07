@@ -6,6 +6,16 @@ Method ItShouldBeEqual(pValue, pExpected)
 	Do $$$AssertEquals(pValue, pExpected, "[Expected]: " _ $Get(pExpected) _ " [Got]: "_$Get(pValue))
 }
 
+Method ItShouldBeTrue(pValue)
+{
+	Do ..ItShouldBeEqual(pValue, $$$YES)
+}
+
+Method ItShouldBeFalse(pValue)
+{
+	Do ..ItShouldBeEqual(pValue, $$$NO)
+}
+
 Method ItShouldBeOk(pStatus)
 {
 	Set descerr = "OK"
@@ -20,11 +30,18 @@ Method TestGetRunTimeInfo()
 	Do ..ItShouldBeEqual(tClassName,"SamplePrj.PierogiDelivery.Service.Order")
 }
 
-Method TestValidEnsembleObject()
+Method TestInvalidEnsembleObject()
 {
-	Do ..ItShouldBeOk(##class(Pierogi.core.Ensemble).RunTimeInfo("bsOk",.tConfigName,.tClassName))
+	Do ..ItShouldBeOk(##class(Pierogi.core.Ensemble).RunTimeInfo("businessServiceInvalidName",.tConfigName,.tClassName))
 	Do ..ItShouldBeEqual(tConfigName,"")
 	Do ..ItShouldBeEqual(tClassName,"")
+}
+
+Method TestIfIsABusinessService()
+{
+	Do ..ItShouldBeTrue(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Service.Order"))
+	Do ..ItShouldBeFalse(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Service.Invalid"))
+	Do ..ItShouldBeFalse(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Operation.Client"))
 }
 
 }
