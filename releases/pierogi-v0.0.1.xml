@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-07 10:52:32">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-07 11:01:14">
 <Class name="Pierogi.core.Ensemble">
-<TimeChanged>64321,39148.217458</TimeChanged>
+<TimeChanged>64321,39307.508729</TimeChanged>
 <TimeCreated>64321,32618.767087</TimeCreated>
+
+<Method name="RunTimeInfo">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,*pConfigName:%String,*pClassName:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pConfigName = $get(^Ens.Runtime("DispatchName",pTargetDispatchName))
+		Set pClassName =  $get(^Ens.Runtime("ConfigItem",pConfigName,"ClassName"))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
 </Class>
 </Export>
