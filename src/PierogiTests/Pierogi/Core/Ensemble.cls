@@ -1,9 +1,82 @@
 Class PierogiTests.Pierogi.Core.Ensemble Extends %UnitTest.TestCase
 {
 
+Method OnBeforeAllTests() As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		Do ##class(SamplePrj.PierogiDelivery.Data.Order).%KillExtent()
+		Do ##class(SamplePrj.PierogiDelivery.Data.Clients).%KillExtent()
+		Do ##class(SamplePrj.PierogiDelivery.Data.Flavors).%KillExtent()
+		Do ##class(SamplePrj.PierogiDelivery.Data.Clients).Populate(10)
+		Do ##class(SamplePrj.PierogiDelivery.Data.Flavors).Seeds()
+		Do ##class(Ens.Director).StopProduction()
+		Do ##class(Ens.Director).StartProduction()
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+Method OnAfterAllTests() As %Status
+{
+	Do ##class(Ens.Director).StopProduction()
+	Quit $$$OK
+}
+
+// Auxiliary -------------------------------------------------------------------------------------------
+
+ClassMethod ClientsList() As %String
+{
+	Set tOutput = ""
+	Try {
+		
+		Set tSql = "Select ID as Client FROM SamplePrj_PierogiDelivery_Data.Clients ",
+			tStatement =  ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		
+		Set tRS = tStatement.execute()
+		
+		While tRS.%Next() {
+			Set $List(tOutput, *+1) = tRS.%Get("Client")
+		}
+		
+		Set tOutput = $ListToString(tOutput,",")
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tOutput
+}
+
+ClassMethod FlavorList() As %String
+{
+	Set tOutput = ""
+	Try {
+		
+		Set tSql = "Select Name As Flavor FROM SamplePrj_PierogiDelivery_Data.Flavors ",
+			tStatement =  ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		
+		Set tRS = tStatement.execute()
+		
+		While tRS.%Next() {
+			Set $List(tOutput, *+1) = tRS.%Get("Flavor")
+		}
+		
+		Set tOutput = $ListToString(tOutput,",")
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tOutput
+}
+
+// Asserts ----------------------------------------------------------------------------------------------
+
 Method ItShouldBeEqual(pValue, pExpected)
 {
-	Do $$$AssertEquals(pValue, pExpected, "[Expected]: " _ $Get(pExpected) _ " [Got]: "_$Get(pValue))
+	Set:$Get(pExpected)="" pExpected = "NULL"
+	Set:$Get(pValue)="" pValue = "NULL"
+	Do $$$AssertEquals(pValue, pExpected, "[Expected]: " _ pExpected _ " [Got]: "_pValue)
 }
 
 Method ItShouldBeTrue(pValue)
@@ -22,6 +95,30 @@ Method ItShouldBeOk(pStatus)
 	Set:$$$ISERR(pStatus) descerr = $System.Status.GetErrorText(pStatus)
 	Do $$$AssertStatusOK(pStatus, "[Expected]: OK [Got]: "_$Get(descerr))
 }
+
+// Factories --------------------------------------------------------------------------------------------
+
+ClassMethod ServiceOrderFactory() As SamplePrj.PierogiDelivery.Service.Order.Req
+{
+	Set tfactory = ##class(SamplePrj.PierogiDelivery.Service.Order.Req).%New()
+	
+	Set tClients = $ListFromString(..ClientsList(),",")
+	Set randomClient = ##class(SamplePrj.PierogiDelivery.Data.Clients).%OpenId($List(tClients, $Random($ListLength(tClients)) + 1))
+	
+	Set tFlavors = $ListFromString(..FlavorList(),",")
+	Set randomFlavor = $List(tFlavors, $Random($ListLength(tFlavors)) + 1)
+	
+	Set tfactory.ClientCity 	= randomClient.City,
+		tfactory.ClientName 	= randomClient.Name, 
+		tfactory.ClientStreet 	= randomClient.Street, 
+		tfactory.PierogiFlavor	= randomFlavor,
+		tfactory.Quantity		= $Random(999)
+		
+	
+	Quit tfactory
+}
+
+// Tests Specs ------------------------------------------------------------------------------------------
 
 Method TestGetRunTimeInfo()
 {
@@ -42,6 +139,10 @@ Method TestIfIsABusinessService()
 	Do ..ItShouldBeTrue(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Service.Order"))
 	Do ..ItShouldBeFalse(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Service.Invalid"))
 	Do ..ItShouldBeFalse(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Operation.Client"))
+}
+
+Method TestCallMethod()
+{
 }
 
 }

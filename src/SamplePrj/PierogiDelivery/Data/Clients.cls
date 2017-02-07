@@ -26,25 +26,24 @@ Relationship Orderes As SamplePrj.PierogiDelivery.Data.Order [ Cardinality = chi
 </Data>
 <DataLocation>^SamplePrj.Pierogi5322.ClientsD</DataLocation>
 <DefaultData>ClientsDefaultData</DefaultData>
-<ExtentSize>1000</ExtentSize>
+<ExtentSize>10</ExtentSize>
 <IdLocation>^SamplePrj.Pierogi5322.ClientsD</IdLocation>
 <IndexLocation>^SamplePrj.Pierogi5322.ClientsI</IndexLocation>
 <Property name="%%CLASSNAME">
-<OutlierSelectivity>.992632:</OutlierSelectivity>
-<Selectivity>0.1000%</Selectivity>
+<Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>3.7436%</Selectivity>
+<Selectivity>12.5000%</Selectivity>
 </Property>
 <Property name="Name">
-<Selectivity>0.1000%</Selectivity>
+<Selectivity>10.0000%</Selectivity>
 </Property>
 <Property name="Street">
-<Selectivity>0.1000%</Selectivity>
+<Selectivity>10.0000%</Selectivity>
 </Property>
 <SequenceNumber>5</SequenceNumber>
 <SQLMap name="IDKEY">
-<BlockCount>-32</BlockCount>
+<BlockCount>-4</BlockCount>
 </SQLMap>
 <StreamLocation>^SamplePrj.Pierogi5322.ClientsS</StreamLocation>
 <Type>%Library.CacheStorage</Type>
