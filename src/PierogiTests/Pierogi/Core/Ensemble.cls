@@ -3,14 +3,14 @@ Class PierogiTests.Pierogi.Core.Ensemble Extends %UnitTest.TestCase
 
 Method ItShouldBeEqual(pValue, pExpected)
 {
-	Do $$$AssertEquals(pValue, pExpected, "Expected: " _ $Get(pExpected) _ " Got: "_$Get(pValue))
+	Do $$$AssertEquals(pValue, pExpected, "[Expected]: " _ $Get(pExpected) _ " [Got]: "_$Get(pValue))
 }
 
 Method ItShouldBeOk(pStatus)
 {
 	Set descerr = "OK"
 	Set:$$$ISERR(pStatus) descerr = $System.Status.GetErrorText(pStatus)
-	Do $$$AssertStatusOK(pStatus, "Expected: OK Got: "_$Get(descerr))
+	Do $$$AssertStatusOK(pStatus, "[Expected]: OK [Got]: "_$Get(descerr))
 }
 
 Method TestGetRunTimeInfo()
