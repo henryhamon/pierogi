@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-07 14:32:54">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-07 16:52:59">
 <Class name="Pierogi.core.Ensemble">
-<TimeChanged>64321,51195.416284</TimeChanged>
+<TimeChanged>64321,60625.946044</TimeChanged>
 <TimeCreated>64321,32618.767087</TimeCreated>
 
 <Method name="RunTimeInfo">
@@ -34,6 +34,65 @@
 		Set tResult = $$$NO
 	}
 	Quit tResult
+]]></Implementation>
+</Method>
+
+<Method name="Call">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, pOutput = ""
+	Try {
+		$$$THROWONERROR(tSC, ..RunTimeInfo(pTargetDispatchName, .pConfigName, .pClassname))
+		Set:pClassname="" tSC = $$$ERROR(5002,pTargetDispatchName _ " Not Found")
+		Throw:$$$ISERR(tSC)
+		
+		If ..IsAService(pClassname) {
+			$$$THROWONERROR(tSC, ..CallWithBusinessService(pTargetDispatchName, pInput, .pOutput))
+		} Else {
+			$$$THROWONERROR(tSC, ..CallWithoutBusinessService(pTargetDispatchName, pInput, .pOutput))
+		}
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="CallWithBusinessService">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ##class(Ens.Director).CreateBusinessService(pTargetDispatchName,.tService))
+		Do tService.ProcessInput(pInput,.pOutput)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="CallWithoutBusinessService">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC,  ##Class(EnsLib.Testing.Service).SendTestRequest(pTargetDispatchName, pInput, .pOutput, .tSessionId, $$$YES))
+		Set ^CacheTemp.EnsRuntimeAppData($Namespace,"EnsLib.Testing.Service",tSessionId,"start") = $ZDatetime($ztimestamp,3,,3)
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 ]]></Implementation>
 </Method>
 </Class>

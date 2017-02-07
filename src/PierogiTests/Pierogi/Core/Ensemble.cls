@@ -98,7 +98,7 @@ Method ItShouldBeOk(pStatus)
 
 // Factories --------------------------------------------------------------------------------------------
 
-ClassMethod ServiceOrderFactory() As SamplePrj.PierogiDelivery.Service.Order.Req
+ClassMethod ServiceOrderFactory(Output pClient As SamplePrj.PierogiDelivery.Data.Clients = "", Output pFlavor = "") As SamplePrj.PierogiDelivery.Service.Order.Req
 {
 	Set tfactory = ##class(SamplePrj.PierogiDelivery.Service.Order.Req).%New()
 	
@@ -114,6 +114,8 @@ ClassMethod ServiceOrderFactory() As SamplePrj.PierogiDelivery.Service.Order.Req
 		tfactory.PierogiFlavor	= randomFlavor,
 		tfactory.Quantity		= $Random(999)
 		
+	Set pClient = randomClient
+	Set pFlavor = randomFlavor
 	
 	Quit tfactory
 }
@@ -141,8 +143,34 @@ Method TestIfIsABusinessService()
 	Do ..ItShouldBeFalse(##class(Pierogi.core.Ensemble).IsAService("SamplePrj.PierogiDelivery.Operation.Client"))
 }
 
-Method TestCallMethod()
+Method TestCallBusinessService()
 {
+	Set tClients = $ListFromString(..ClientsList(),","),
+		randomClient = ##class(SamplePrj.PierogiDelivery.Data.Clients).%OpenId($List(tClients, $Random($ListLength(tClients)) + 1)),
+		request = ##class(SamplePrj.PierogiDelivery.Service.Client.Req).%New(),
+		request.Name 	= randomClient.Name,
+		request.City 	= randomClient.City,
+		request.Street 	= randomClient.Street
+		
+	Do ..ItShouldBeOk(##class(Pierogi.core.Ensemble).Call("bsClient", request, .response))
+			
+	Do ..ItShouldBeTrue($IsObject(response))
+	Do ..ItShouldBeEqual(response.ClientId, randomClient.%Id())
+}
+
+Method TestCallBusinessOperation()
+{
+	Set tClients = $ListFromString(..ClientsList(),","),
+		randomClient = ##class(SamplePrj.PierogiDelivery.Data.Clients).%OpenId($List(tClients, $Random($ListLength(tClients)) + 1)),
+		request = ##class(SamplePrj.PierogiDelivery.Operation.Client.Req).%New(),
+		request.Name 	= randomClient.Name,
+		request.City 	= randomClient.City,
+		request.Street 	= randomClient.Street
+	
+	Do ..ItShouldBeOk(##class(Pierogi.core.Ensemble).Call("boClient", request, .response))
+	
+	#Dim response As SamplePrj.PierogiDelivery.Operation.Client.Resp
+	Do ..ItShouldBeEqual(response.ClientId,randomClient.%Id())
 }
 
 }
