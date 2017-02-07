@@ -5,8 +5,9 @@ ClassMethod RunTimeInfo(pTargetDispatchName As %String, Output pConfigName As %S
 {
 	Set tSC = $$$OK
 	Try {
+		Set pConfigName = "", pClassName = ""
 		Set pConfigName = $get(^Ens.Runtime("DispatchName",pTargetDispatchName))
-		Set pClassName =  $get(^Ens.Runtime("ConfigItem",pConfigName,"ClassName"))
+		Set:pConfigName'="" pClassName =  $get(^Ens.Runtime("ConfigItem",pConfigName,"ClassName"))
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
