@@ -1,4 +1,4 @@
-Class PierogiTests.Pierogi.Ensemble.Core Extends %UnitTest.TestCase
+Class PierogiTests.Pierogi.Ensemble.Core Extends (%UnitTest.TestCase, PierogiTests.Pierogi.Helper)
 {
 
 Method OnBeforeAllTests() As %Status
@@ -10,8 +10,12 @@ Method OnBeforeAllTests() As %Status
 		Do ##class(SamplePrj.PierogiDelivery.Data.Flavors).%KillExtent()
 		Do ##class(SamplePrj.PierogiDelivery.Data.Clients).Populate(10)
 		Do ##class(SamplePrj.PierogiDelivery.Data.Flavors).Seeds()
-		Do ##class(Ens.Director).StopProduction()
-		Do ##class(Ens.Director).StartProduction()
+		
+		OPEN 1
+		USE 1
+			Do ##class(Ens.Director).StopProduction()
+			Do ##class(Ens.Director).StartProduction()
+		CLOSE 1
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
@@ -20,7 +24,10 @@ Method OnBeforeAllTests() As %Status
 
 Method OnAfterAllTests() As %Status
 {
-	Do ##class(Ens.Director).StopProduction()
+	OPEN 1
+	USE 1
+		Do ##class(Ens.Director).StopProduction()
+	CLOSE 1
 	Quit $$$OK
 }
 
@@ -68,32 +75,6 @@ ClassMethod FlavorList() As %String
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tOutput
-}
-
-// Asserts ----------------------------------------------------------------------------------------------
-
-Method ItShouldBeEqual(pValue, pExpected)
-{
-	Set:$Get(pExpected)="" pExpected = "NULL"
-	Set:$Get(pValue)="" pValue = "NULL"
-	Do $$$AssertEquals(pValue, pExpected, "[Expected]: " _ pExpected _ " [Got]: "_pValue)
-}
-
-Method ItShouldBeTrue(pValue)
-{
-	Do ..ItShouldBeEqual(pValue, $$$YES)
-}
-
-Method ItShouldBeFalse(pValue)
-{
-	Do ..ItShouldBeEqual(pValue, $$$NO)
-}
-
-Method ItShouldBeOk(pStatus)
-{
-	Set descerr = "OK"
-	Set:$$$ISERR(pStatus) descerr = $System.Status.GetErrorText(pStatus)
-	Do $$$AssertStatusOK(pStatus, "[Expected]: OK [Got]: "_$Get(descerr))
 }
 
 // Factories --------------------------------------------------------------------------------------------
