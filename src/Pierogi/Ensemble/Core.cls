@@ -1,14 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-08 14:14:30">
-<Class name="Pierogi.Ensemble.Core">
-<TimeChanged>64322,50260.004598</TimeChanged>
-<TimeCreated>64322,50260.004598</TimeCreated>
+Class Pierogi.Ensemble.Core
+{
 
-<Method name="RunTimeInfo">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,*pConfigName:%String,*pClassName:%String</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod RunTimeInfo(pTargetDispatchName As %String, Output pConfigName As %String, Output pClassName As %String) As %Status
+{
 	Set tSC = $$$OK
 	Try {
 		Set pConfigName = "", pClassName = ""
@@ -18,14 +12,10 @@
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
+}
 
-<Method name="IsAService">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pClassName:%String</FormalSpec>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
+ClassMethod IsAService(pClassName As %String) As %Boolean
+{
 	Set tResult = $$$NO
 	Try {
 		Set class = ##class(%Dictionary.ClassDefinition).%OpenId(pClassName)
@@ -34,14 +24,10 @@
 		Set tResult = $$$NO
 	}
 	Quit tResult
-]]></Implementation>
-</Method>
+}
 
-<Method name="Call">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod Call(pTargetDispatchName As %String, pInput As %RegisteredObject, Output pOutput As %RegisteredObject = "") As %Status
+{
 	Set tSC = $$$OK, pOutput = ""
 	Try {
 		$$$THROWONERROR(tSC, ..RunTimeInfo(pTargetDispatchName, .pConfigName, .pClassname))
@@ -58,15 +44,10 @@
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
+}
 
-<Method name="CallWithBusinessService">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
-<Private>1</Private>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod CallWithBusinessService(pTargetDispatchName As %String, pInput As %RegisteredObject, Output pOutput As %RegisteredObject = "") As %Status [ Private ]
+{
 	Set tSC = $$$OK
 	Try {
 		$$$THROWONERROR(tSC, ##class(Ens.Director).CreateBusinessService(pTargetDispatchName,.tService))
@@ -76,15 +57,10 @@
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
+}
 
-<Method name="CallWithoutBusinessService">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
-<Private>1</Private>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod CallWithoutBusinessService(pTargetDispatchName As %String, pInput As %RegisteredObject, Output pOutput As %RegisteredObject = "") As %Status [ Private ]
+{
 	Set tSC = $$$OK
 	Try {
 		$$$THROWONERROR(tSC,  ##Class(EnsLib.Testing.Service).SendTestRequest(pTargetDispatchName, pInput, .pOutput, .tSessionId, $$$YES))
@@ -93,7 +69,7 @@
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
-</Class>
-</Export>
+}
+
+}
+
