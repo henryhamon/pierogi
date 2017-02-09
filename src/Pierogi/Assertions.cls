@@ -9,6 +9,12 @@ Method True(pValue As %Boolean)
 	Do ..Results.Insert(..Test(pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
 }
 
+/// Assert that value is false.
+Method False(pValue As %Boolean)
+{
+	Do ..Results.Insert(..Test('pValue, ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String [ Private ]
 {
 	Set:pBR="" pBR = " "

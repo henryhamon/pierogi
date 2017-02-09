@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-09 16:46:17">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-09 16:54:02">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64323,55311.57982</TimeChanged>
@@ -73,7 +73,7 @@ The Expectation that this Assert belongs</Description>
 
 <Class name="Pierogi.Assertions">
 <Abstract>1</Abstract>
-<TimeChanged>64323,59312.550544</TimeChanged>
+<TimeChanged>64323,60821.509251</TimeChanged>
 <TimeCreated>64323,54295.847656</TimeCreated>
 
 <Property name="Results">
@@ -86,6 +86,14 @@ The Expectation that this Assert belongs</Description>
 Assert that value is true.</Description>
 <FormalSpec>pValue:%Boolean</FormalSpec>
 <Implementation><![CDATA[	Do ..Results.Insert(..Test(pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
+]]></Implementation>
+</Method>
+
+<Method name="False">
+<Description>
+Assert that value is false.</Description>
+<FormalSpec>pValue:%Boolean</FormalSpec>
+<Implementation><![CDATA[	Do ..Results.Insert(..Test('pValue, ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))))
 ]]></Implementation>
 </Method>
 
@@ -528,7 +536,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Expectations">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64323,60317.218879</TimeChanged>
+<TimeChanged>64323,60837.082211</TimeChanged>
 <TimeCreated>64323,60317.218879</TimeCreated>
 
 <Method name="TestAssertIncrementNumber">
@@ -556,10 +564,32 @@ from the <method>Package</method> class method.]]></Description>
 ]]></Implementation>
 </Method>
 
+<Method name="TestAssertFalse">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.False($$$YES)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.False($$$NO)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
+</Method>
+
 <Method name="TestStatusOk">
 <Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
 	
-	;;Do ..ItShouldBeTrue()
+	Do expectation.Ok($$$OK)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	
+	Do expectation.Ok($$$ERROR(5002,"Oops!...I Did It Again"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 ]]></Implementation>
 </Method>
 
@@ -678,7 +708,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64323,60342.395185</TimeChanged>
+<TimeChanged>64323,60825.474794</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -726,7 +756,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>14.2857%</Selectivity>
+<Selectivity>11.1111%</Selectivity>
 </Property>
 <Property name="Name">
 <Selectivity>10.0000%</Selectivity>

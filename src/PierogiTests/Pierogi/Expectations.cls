@@ -24,10 +24,17 @@ Method TestAssertTrue()
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
-Method TestStatusOk()
+Method TestAssertFalse()
 {
+	Set expectation = ##class(Pierogi.Expectations).%New()
 	
-	;;Do ..ItShouldBeTrue()
+	Do expectation.False($$$YES)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.False($$$NO)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(2).Ok)
 }
 
 Method TestResult()
