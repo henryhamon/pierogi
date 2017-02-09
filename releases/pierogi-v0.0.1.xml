@@ -1,14 +1,430 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-08 17:18:38">
-<Class name="Pierogi.Asserts">
-<TimeChanged>64322,62300.698768</TimeChanged>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-09 16:36:57">
+<Class name="Pierogi.Assert">
+<Super>%SerialObject</Super>
+<TimeChanged>64323,55311.57982</TimeChanged>
 <TimeCreated>64322,62300.698768</TimeCreated>
+
+<Property name="Number">
+<Description>
+The number of the assertion</Description>
+<Type>%Integer</Type>
+</Property>
+
+<Property name="Ok">
+<Description>
+Whether the assertion passed or failed</Description>
+<Type>%Boolean</Type>
+</Property>
+
+<Property name="Name">
+<Description>
+The Name of the assertion</Description>
+<Type>%String</Type>
+</Property>
+
+<Property name="Msg">
+<Description>
+The Expectation message when it fails</Description>
+<Type>%String</Type>
+</Property>
+
+<Property name="Expectation">
+<Description>
+The Expectation that this Assert belongs</Description>
+<Type>%String</Type>
+</Property>
+
+<Method name="%OnNew">
+<FormalSpec>pLastNumber:%Integer=0</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set ..Number = $Increment(pLastNumber)
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>AssertState</State>
+<StreamLocation>^Pierogi.AssertS</StreamLocation>
+<Data name="AssertState">
+<Value name="1">
+<Value>Number</Value>
+</Value>
+<Value name="2">
+<Value>Ok</Value>
+</Value>
+<Value name="3">
+<Value>Name</Value>
+</Value>
+<Value name="4">
+<Value>Msg</Value>
+</Value>
+<Value name="5">
+<Value>Expectation</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Pierogi.Assertions">
+<Abstract>1</Abstract>
+<TimeChanged>64323,59312.550544</TimeChanged>
+<TimeCreated>64323,54295.847656</TimeCreated>
+
+<Property name="Results">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
+<Method name="True">
+<Description>
+Assert that value is true.</Description>
+<FormalSpec>pValue:%Boolean</FormalSpec>
+<Implementation><![CDATA[	Do ..Results.Insert(..Test(pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
+]]></Implementation>
+</Method>
+
+<Method name="Message">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pExpected="",pGot="",pBR=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set:pBR="" pBR = " "
+	Quit "Expected: " _ $Get(pExpected) _ pBR _"Actual: "_$Get(pGot)
+]]></Implementation>
+</Method>
+
+<Method name="Test">
+<FormalSpec>pResult:%Boolean=0,pMessage:%String</FormalSpec>
+<Private>1</Private>
+<ReturnType>Pierogi.Assert</ReturnType>
+<Implementation><![CDATA[
+	Set tAssert = ##class(Pierogi.Assert).%New( ..Results.Count() ), 
+		tAssert.Ok = pResult = $$$YES
+	Set:tAssert.Ok tAssert.Msg = pMessage
+	
+	Quit tAssert
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Pierogi.Asserts">
+<Super>%SerialObject</Super>
+<TimeChanged>64323,59049.11088</TimeChanged>
+<TimeCreated>64322,62300.698768</TimeCreated>
+
+<Property name="Number">
+<Description>
+The number of the assertion</Description>
+<Type>%Integer</Type>
+</Property>
+
+<Property name="Ok">
+<Description>
+Whether the assertion passed or failed</Description>
+<Type>%Boolean</Type>
+</Property>
+
+<Property name="Name">
+<Description>
+The Name of the assertion</Description>
+<Type>%String</Type>
+</Property>
+
+<Property name="Msg">
+<Description>
+The Expectation message when it fails</Description>
+<Type>%String</Type>
+</Property>
+
+<Property name="Expectation">
+<Description>
+The Expectation that this Assert belongs</Description>
+<Type>%String</Type>
+</Property>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+
+/// Assert that status is Not OK
+Method NotOk(pValue, pMessage = "")
+{
+	Do $$$AssertStatusNotOK(pValue, pMessage)
+}
+
+
+/// Assert that value is false.
+Method False(pValue, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))
+	Do $$$AssertNotTrue(pValue, pMessage)
+}
+
+/// Assert that value is not equal to expected
+Method Not(pValue, pExpected, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message(pExpected,pValue)
+	Do $$$AssertNotEquals(pValue, pExpected, pMessage)
+}
+
+/// Assert Should Be Equals 
+Method Is(pValue, pExpected, pMessage = "")
+{
+ 	Set:pMessage="" pMessage = ..Message(pExpected,pValue)
+ 	Do $$$AssertEquals(pValue, pExpected, pMessage)
+}
+
+/// Assert Should Be Equal
+Method Equal(pValue, pExpected, pMessage = "")
+{
+	Do ..Is(pValue, pExpected, pMessage)
+}
+
+/// Assert Should Be Equal
+Method Eql(pValue, pExpected, pMessage = "")
+{
+	Do ..Equal(pValue, pExpected, pMessage)
+}
+
+/// Assert Should Be Exact the same
+Method Exactly(pValue, pExpected, pMessage = "")
+{
+	Do ..Is(pValue, pExpected, pMessage)
+}
+
+/// Assert given object matches a Regex<br/>
+/// Given: String, otherValue: regexp. Uses %Regex.Matcher:
+/// 
+Method Regex(pValue, pRegex, pMessage = "")
+{
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+	
+    Set:pMessage="" pMessage = ..Message(pRegex,pValue)
+    
+	Do ..True(matcher.Locate(), pMessage)
+}
+
+Method Match(pValue, pRegex, pMessage = "")
+{
+	Do ..Regex(pValue, pRegex, pMessage)
+}
+
+/// Assert inclusive numeric range (<= to and >= from): <br/>
+/// <br/>
+/// Do ..Within(User.Age, 5, 50)
+Method Within(pValue, pMin, pMax, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message(pMin_".."_pMax, pValue)
+	Do ..True(((pValue >= pMin)&&(pValue <= pMax)),pMessage)
+}
+
+/// Above(num) and GreaterThan(num)
+/// Assert numeric value above the given value (> num): <br/>
+/// <br/>
+/// Do ..Above(User.Age, 5)<br/>
+/// Do ..GreaterThan(User.Age, 5)
+Method Above(pValue, pNum, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message(pNum_" < ", pValue)
+	Do ..True((pValue > pNum), pMessage)
+}
+
+/// Assert is greater than or equal to (>=) valueToBeAtLeast(num)
+Method IsAtLeast(pValue, pNum, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("Is at Least " _ pNum, pValue)
+	Do ..True((pValue >= pNum), pMessage)
+}
+
+/// Assert numeric value above the given value (> num):
+Method GreaterThan(pValue, pNum, pMessage = "")
+{
+	Do ..Above(pValue, pNum, pMessage = "")
+}
+
+/// Below(num) and LessThan(num)<br/>
+/// Assert numeric value below the given value (< num)<br/>
+/// <br/>
+/// Do ..Below(User.Age, 50)<br/>
+/// Do ..LessThan(User.Age, 50)
+Method Below(pValue, pNum, pMessage = "")
+{
+	Do ..True((pValue < pNum), pMessage)
+}
+
+/// Assert numeric value below the given value (< num)
+Method LessThan(pValue, pNum, pMessage = "")
+{
+	Do ..Below(pValue, pNum, pMessage = "")
+}
+
+/// Assert is less than or equal to (<=) valueToBeAtMost (num)
+Method IsAtMost(pValue, pNum, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("Is at Most " _ pNum, pValue)
+	Do ..True((pValue <= pNum), pMessage)
+}
+
+/// Assert that a string starts with str.
+/// <br/>
+/// Do ..startWith('foobar','foo')
+Method startWith(pValue, pExpected, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("start with "_pExpected, pValue)
+	Set pExpected = $Replace($Replace($Replace($Replace(pExpected,"/","\/"),"+","\+"),"*","\*")," ","\s")
+	Do ..Regex(pValue,"^("_pExpected_")",pMessage)
+}
+
+/// Assert floating point number near num within a +/- delta range.
+/// <br/>
+/// Do ..Approximately(3.49, 3.5, 0.01 )
+Method Approximately(pValue As %Numeric, pExpected As %Numeric, pDelta As %Numeric = 0.01, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("Approximately "_pExpected, pValue)
+	Do ..Within(pValue, (pExpected - pDelta), (pExpected + pDelta), pMessage)
+}
+
+/// Asserts that the target is equal expected, to within a +/- delta range.
+/// <br/>
+/// Do ..CloseTo(1.5, 1, 0.5)
+Method CloseTo(pValue As %Numeric, pExpected As %Numeric, pDelta As %Numeric = 0.5, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("Close to "_pExpected, pValue)
+	Do ..Approximately(pValue, pExpected, pDelta, pMessage)
+}
+
+/// Asserts that value is an object
+Method IsObject(pValue, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("Is Object")
+	Do ..True($IsObject(pValue) , pMessage)
+}
+
+/// Asserts that value is NOT an object
+Method IsNotObject(pValue, pMessage = "")
+{
+	Set:pMessage="" pMessage = ..Message("Is not Object", $ClassName(pValue))
+	Do ..False($IsObject(pValue) , pMessage)
+}
+
+/// Assert that throws an error, or promise rejects with an error.
+Method Throws(pStatus, pMessage = "")
+{
+	Do ..NotOk(pStatus)
+}
+
+/// Assert that doesn't throw an error or promise resolves
+Method NotThrows(pStatus, pMessage = "")
+{
+	Do ..Ok(pStatus)
+}
+
+/// Asserts that value’s type is pClassName
+/// <br/>
+/// Do ..TypeOf(pClass, "%RegisteredObject" )
+Method TypeOf(pValue, pClassName, pMessage = "")
+{
+	Do ..Is($ClassName(pValue),pClassName)
+}
+
+ClassMethod Pass(pMessage = "")
+{
+}
+
+ClassMethod Fail(pMessage = "")
+{
+}
+
+// TODO
+
+Method AssertPropertyDefinition(ClassName As %String, PropertyName As %String, Definition As %String, Value)
+{
+	Set classDefinition = ##class(%Library.ClassDefinition).%OpenId(ClassName)
+	Set properties = classDefinition.Properties
+	
+	Set foundProperty = ""
+	For i=1:1:properties.Size
+	{
+		Set property = properties.GetAt(i)
+		Set:property.Name=PropertyName foundProperty = property
+	}
+	
+	If foundProperty
+	{
+		Set gotValue = $ZObjProperty(foundProperty, Definition)
+		Do $$$AssertEquals(Value, gotValue, "Value was: "_gotValue)
+	}
+	Else
+	{
+		Do $$$AssertTrue(0, "Property does not exist: "_PropertyName)
+	}
+}
+
+Method AssertMessageMapping(className As %String, type As %String, action As %String, index As %Integer = 1)
+{
+	Do ##class(Ens.Util.XML.Reader).ObjectsFromXData(.items, className, "MessageMap", "Ens.Config.MessageMap")
+	If items="" {
+		Do $$$AssertNotEquals("", items, "No mappings found")
+	} ElseIf items.Size < index {
+		Do $$$AssertTrue(items.Size >= index, "Could not find mapping for given index '"_index_"'")
+	} Else {
+		Do $$$AssertEquals(type, items.GetAt(index).MessageType)
+		Do $$$AssertEquals(action, items.GetAt(index).ActionMethod)
+	}
+}
+*/
+]]></Content>
+</UDLText>
+
+<Method name="Message">
+<FormalSpec>pExpected="",pGot="",pBR=""</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set:pBR="" pBR = " "
+	Quit "Expected: " _ $Get(pExpected) _ pBR _"Actual: "_$Get(pGot)
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>AssertsState</State>
+<StreamLocation>^Pierogi.AssertsS</StreamLocation>
+<Data name="AssertsState">
+<Value name="1">
+<Value>Number</Value>
+</Value>
+<Value name="2">
+<Value>Ok</Value>
+</Value>
+<Value name="3">
+<Value>Name</Value>
+</Value>
+<Value name="4">
+<Value>Expectation</Value>
+</Value>
+<Value name="5">
+<Value>Msg</Value>
+</Value>
+</Data>
+</Storage>
 </Class>
 
 
 <Class name="Pierogi.Core">
-<TimeChanged>64322,61356.083404</TimeChanged>
+<TimeChanged>64323,53553.132427</TimeChanged>
 <TimeCreated>64322,54590.591663</TimeCreated>
+
+<Property name="Results">
+</Property>
 
 <Method name="Describe">
 <ClassMethod>1</ClassMethod>
@@ -124,6 +540,13 @@
 </Class>
 
 
+<Class name="Pierogi.Expectations">
+<Super>%RegisteredObject,Pierogi.Assertions</Super>
+<TimeChanged>64323,59015.829797</TimeChanged>
+<TimeCreated>64323,53940.164625</TimeCreated>
+</Class>
+
+
 
 
 <Class name="Pierogi.Suite">
@@ -201,8 +624,43 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Core.Asserts">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64322,62246.298424</TimeChanged>
+<TimeChanged>64323,59772.14385</TimeChanged>
 <TimeCreated>64322,62246.298424</TimeCreated>
+
+<Method name="TestAssertIncrementNumber">
+<Implementation><![CDATA[
+	S assert1 = ##class(Pierogi.Assert).%New()
+	D ..ItShouldBeEqual(assert1.Number,1)
+	
+	S assert2 = ##class(Pierogi.Assert).%New(1)
+	D ..ItShouldBeEqual(assert2.Number,2)
+]]></Implementation>
+</Method>
+
+<Method name="TestAssertTrue">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.True($$$YES)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	
+	Do expectation.True($$$NO)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
+</Method>
+
+<Method name="TestStatusOk">
+<Implementation><![CDATA[
+	
+	;;Do ..ItShouldBeTrue()
+]]></Implementation>
+</Method>
+
+<Method name="TestResult">
+</Method>
 </Class>
 
 
@@ -524,7 +982,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64322,61631.271946</TimeChanged>
+<TimeChanged>64323,59780.540992</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -3156,7 +3614,7 @@ Male Gender = 1</Description>
 
 
 
-<Project name="pierogi_system" LastModified="2017-02-08 17:18:38.660488">
+<Project name="pierogi_system" LastModified="2017-02-09 16:24:11.948075">
   <Items>
     <ProjectItem name="Pierogi" type="PKG"></ProjectItem>
     <ProjectItem name="PierogiTests" type="PKG"></ProjectItem>
