@@ -37,6 +37,32 @@ Method TestAssertFalse()
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(2).Ok)
 }
 
+Method TestStatusOk()
+{
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Ok($$$OK)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Ok($$$ERROR(5002,"Oops!...I Did It Again"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+}
+
+Method TestStatusNotOk()
+{
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.NotOk($$$ERROR(5002,"Oops!...I Did It Again"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.NotOk($$$OK)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+}
+
 Method TestResult()
 {
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-09 16:54:02">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-09 17:17:27">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64323,55311.57982</TimeChanged>
@@ -73,7 +73,7 @@ The Expectation that this Assert belongs</Description>
 
 <Class name="Pierogi.Assertions">
 <Abstract>1</Abstract>
-<TimeChanged>64323,60821.509251</TimeChanged>
+<TimeChanged>64323,62035.44875</TimeChanged>
 <TimeCreated>64323,54295.847656</TimeCreated>
 
 <Property name="Results">
@@ -97,6 +97,28 @@ Assert that value is false.</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="Ok">
+<Description>
+Assert that status is OK</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[
+	Set st="Status OK", actual = st
+	Set:$$$ISERR(pValue) actual = $System.Status.GetErrorText(pValue)
+	Do ..Results.Insert(..Test($$$ISOK(pValue), ..Message(st, actual)))
+]]></Implementation>
+</Method>
+
+<Method name="NotOk">
+<Description>
+Assert that status is Not OK</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[
+	Set st="Status Not OK", actual = st
+	Set:$$$ISOK(pValue) actual = "Status OK"
+	Do ..Results.Insert(..Test($$$ISERR(pValue), ..Message(st, actual)))
+]]></Implementation>
+</Method>
+
 <Method name="Message">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pExpected="",pGot="",pBR=""</FormalSpec>
@@ -114,8 +136,8 @@ Assert that value is false.</Description>
 <ReturnType>Pierogi.Assert</ReturnType>
 <Implementation><![CDATA[
 	Set tAssert = ##class(Pierogi.Assert).%New( ..Results.Count() ), 
-		tAssert.Ok = pResult = $$$YES
-	Set:tAssert.Ok tAssert.Msg = pMessage
+		tAssert.Ok = pResult
+	Set:tAssert.Ok=$$$YES tAssert.Msg = pMessage
 	
 	Quit tAssert
 ]]></Implementation>
@@ -536,7 +558,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Expectations">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64323,60837.082211</TimeChanged>
+<TimeChanged>64323,62129.72067</TimeChanged>
 <TimeCreated>64323,60317.218879</TimeCreated>
 
 <Method name="TestAssertIncrementNumber">
@@ -586,8 +608,21 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
 	
-	
 	Do expectation.Ok($$$ERROR(5002,"Oops!...I Did It Again"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
+</Method>
+
+<Method name="TestStatusNotOk">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.NotOk($$$ERROR(5002,"Oops!...I Did It Again"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.NotOk($$$OK)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 ]]></Implementation>
@@ -708,7 +743,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64323,60825.474794</TimeChanged>
+<TimeChanged>64323,62235.018225</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
