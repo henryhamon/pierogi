@@ -11,5 +11,21 @@ Method Describe(pContent As %String = "") As %String
 	Quit pContent
 }
 
+Method BeforeSetup()
+{
+}
+
+Method Before()
+{
+}
+
+Method After()
+{
+}
+
+Method AfterSetup()
+{
+}
+
 }
 

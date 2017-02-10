@@ -24,5 +24,16 @@ Method TestListAllSpecMethods()
 	Do ..ItShouldBeEqual( $List(tests, 2),"ShouldFail")
 }
 
+Method TestRun()
+{
+	
+	Set results = ##class(SampleTest.Suite).Run()
+	#Dim results AS Pierogi.Results
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	D ..ItShouldBeEqual(results.Test,2)
+	D ..ItShouldBeEqual(results.Pass,1)
+	D ..ItShouldBeEqual(results.Fail,1)
+}
+
 }
 

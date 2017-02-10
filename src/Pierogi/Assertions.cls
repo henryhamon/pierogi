@@ -1,6 +1,8 @@
 Class Pierogi.Assertions [ Abstract ]
 {
 
+Property Status As %String [ InitialExpression = "succeed", Private ];
+
 Property Results As list Of Pierogi.Assert;
 
 /// Assert that value is true.
@@ -41,9 +43,17 @@ Method Test(pResult As %Boolean = 0, pMessage As %String) As Pierogi.Assert [ Pr
 {
 	Set tAssert = ##class(Pierogi.Assert).%New( ..Results.Count() ), 
 		tAssert.Ok = pResult
-	Set:tAssert.Ok=$$$YES tAssert.Msg = pMessage
+	If tAssert.Ok=$$$NO {
+		Set tAssert.Msg = pMessage,
+			..Status = "fail"
+	}
 	
 	Quit tAssert
+}
+
+Method Status()
+{
+	Quit ..Status
 }
 
 }

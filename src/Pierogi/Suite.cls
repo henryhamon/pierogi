@@ -1,6 +1,8 @@
 Class Pierogi.Suite Extends %RegisteredObject [ Abstract ]
 {
 
+Property Terminal As %Boolean [ InitialExpression = 1, Private ];
+
 /// Abstract method that should return the name of the package 
 /// where the test cases are located.
 ClassMethod Package() As %String [ Abstract ]
@@ -49,6 +51,91 @@ ClassMethod SpecTests(pClassname As %String, Output pTests) As %Status
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
+}
+
+ClassMethod Run() As Pierogi.Results
+{
+	Set tResults = ##class(Pierogi.Results).%New()
+	Try {
+		Set tResults.Status = $$$OK
+		
+		Set specsClass = ..Specs(), idx = 1
+		While (( idx > 0) && (idx <= $ListLength(specsClass))){
+			
+			$$$THROWONERROR(tSC, ..RunTest($List(specsClass,idx), .tResults))
+			
+			Set idx = $Increment(idx)
+		}
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = tSC
+	}
+	Quit tResults
+}
+
+ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %Status [ Private ]
+{
+	Set tSC = $$$OK
+	Try {
+		Set class = $ClassMethod(pClass,"%New")
+		#Dim class As Pierogi.Spec
+		
+		$$$THROWONERROR(tSC, ..SpecTests(pClass, .specs))
+		
+		If ..Terminal=$$$YES {
+			Do ..TerminalCls(),
+			   ..TerminalClass(pClass)
+		}
+		
+		// LifeCycle
+		Do class.BeforeSetup()
+		
+		// For Each Test
+		For k=1:1:$ListLength(specs){
+			Set test = $List(specs,k)
+			Do class.Before()
+			
+			Set pResults.Test = $Increment(pResults.Test)
+			
+			$$$THROWONERROR(tSC, class.Results.Clear())
+			Do $Method(class, test)
+		
+			;I class.Status = "fail" 
+			
+			Do class.After()
+		}
+		
+		Do class.AfterSetup()
+	
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod TerminalCls()
+{
+	Write #,!,*12
+}
+
+ClassMethod TerminalClass(pClassName As %String)
+{
+	Write *27,"[0m",pClassName,*27,"[0m",!
+}
+
+ClassMethod TerminalPrintPass()
+{
+	Write *27,"[32m",".",*27,"[0m"
+}
+
+ClassMethod TerminalPrintFail()
+{
+	Write *27,"[31m","F",*27,"[0m"
+}
+
+ClassMethod TerminalResume()
+{
 }
 
 }
