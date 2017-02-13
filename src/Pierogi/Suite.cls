@@ -28,7 +28,7 @@ ClassMethod Specs()
 	Quit testList
 }
 
-ClassMethod SpecTests(pClassname As %String, Output pTests) As %Status
+ClassMethod RunnableMethods(pClassname As %String, Output pTests) As %Status
 {
 	Set tSC = $$$OK
 	Try {
@@ -79,7 +79,7 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 	Try {
 		Set class = $ClassMethod(pClass,"%New")
 		#Dim class As Pierogi.Spec
-		$$$THROWONERROR(tSC, ..SpecTests(pClass, .specs))
+		$$$THROWONERROR(tSC, ..RunnableMethods(pClass, .specs))
 		
 		If ..#Terminal=$$$YES {
 			Do ..TerminalClass(pClass)

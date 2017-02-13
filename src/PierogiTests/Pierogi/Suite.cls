@@ -14,11 +14,11 @@ Method TestSpecList()
 	Do ..ItShouldBeEqual( $List(specs,2), "SampleTest.spec02")
 }
 
-Method TestListAllSpecMethods()
+Method TestListAllRunnableMethods()
 {
 	Set specClass = $List(##class(SampleTest.Suite).Specs(),1)
 	Do ..ItShouldBeEqual( specClass, "SampleTest.spec01")
-	Do ..ItShouldBeOk(##class(SampleTest.Suite).SpecTests(specClass, .tests))
+	Do ..ItShouldBeOk(##class(SampleTest.Suite).RunnableMethods(specClass, .tests))
 	Do ..ItShouldBeEqual( $ListLength(tests), 2)
 	Do ..ItShouldBeEqual( $List(tests, 1),"ShouldTestOne")
 	Do ..ItShouldBeEqual( $List(tests, 2),"ShouldFail")
