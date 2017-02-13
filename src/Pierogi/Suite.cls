@@ -73,6 +73,38 @@ ClassMethod Run() As Pierogi.Results
 	Quit tResults
 }
 
+ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.Results) As %Status [ Private ]
+{
+	Set tSC = $$$OK
+	Try {
+		
+		// LifeCycleHooks
+		Do pClass.BeforeSetup()
+		// For Each Test
+		For k=1:1:$ListLength(pRunnableMethods){
+			Set test = $List(pRunnableMethods,k)
+
+			Do pClass.Before()
+			
+			$$$THROWONERROR(tSC, pClass.Results.Clear())
+			Do $Method(pClass, test)
+			$$$THROWONERROR(tSC, pResults.Add(pClass.Status))
+			
+			Do:(pClass.Status="fail" && ..#Terminal) ..TerminalPrintFail()
+			 
+			Do:(pClass.Status="succeed" && ..#Terminal) ..TerminalPrintPass()
+			
+			
+			Do pClass.After()
+		}
+		
+		Do pClass.AfterSetup()
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
 ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %Status [ Private ]
 {
 	Set tSC = $$$OK
@@ -85,27 +117,7 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 			Do ..TerminalClass(pClass)
 		}
 		
-		// LifeCycle
-		Do class.BeforeSetup()
-		// For Each Test
-		For k=1:1:$ListLength(specs){
-			Set test = $List(specs,k)
-
-			Do class.Before()
-			
-			$$$THROWONERROR(tSC, class.Results.Clear())
-			Do $Method(class, test)
-			$$$THROWONERROR(tSC, pResults.Add(class.Status))
-			
-			Do:(class.Status="fail" && ..#Terminal) ..TerminalPrintFail()
-			 
-			Do:(class.Status="succeed" && ..#Terminal) ..TerminalPrintPass()
-			
-			
-			Do class.After()
-		}
-		
-		Do class.AfterSetup()
+		$$$THROWONERROR(tSC, ..LifecycleHooks(class, specs, .pResults))
 	
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
