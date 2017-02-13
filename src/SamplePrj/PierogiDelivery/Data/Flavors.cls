@@ -1,3 +1,4 @@
+/// This class contain a Pierogi DocTest Sample
 Class SamplePrj.PierogiDelivery.Data.Flavors Extends %Persistent
 {
 
