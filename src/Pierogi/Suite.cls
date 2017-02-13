@@ -1,7 +1,7 @@
 Class Pierogi.Suite Extends %RegisteredObject [ Abstract ]
 {
 
-Property Terminal As %Boolean [ InitialExpression = 1, Private ];
+Parameter Terminal = 1;
 
 /// Abstract method that should return the name of the package 
 /// where the test cases are located.
@@ -56,6 +56,7 @@ ClassMethod Run() As Pierogi.Results
 	Set tResults = ##class(Pierogi.Results).%New()
 	Try {
 		Set tResults.Status = $$$OK
+		Do ..TerminalCls()
 		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
@@ -79,12 +80,11 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 		Set class = $ClassMethod(pClass,"%New")
 		#Dim class As Pierogi.Spec
 		$$$THROWONERROR(tSC, ..SpecTests(pClass, .specs))
-		/*
-		If ..Terminal=$$$YES {
-			Do ..TerminalCls(),
-			   ..TerminalClass(pClass)
+		
+		If ..#Terminal=$$$YES {
+			Do ..TerminalClass(pClass)
 		}
-		*/
+		
 		// LifeCycle
 		Do class.BeforeSetup()
 		// For Each Test
@@ -95,21 +95,13 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 			
 			$$$THROWONERROR(tSC, class.Results.Clear())
 			Do $Method(class, test)
-			S ^CacheTemp.ham($I(^CacheTemp.ham),"status") = class.Status
 			$$$THROWONERROR(tSC, pResults.Add(class.Status))
 			
-			/*
-			If ="fail" {
-				;Do:..Terminal ..TerminalPrintFail()
-				Write:'..Terminal "F"
-				Set pResults.Fail = $G(pResults.Fail) + 1
-			} 
-			If class.Status="succeed"  {
-				;Do:..Terminal ..TerminalPrintPass()
-				Write:'..Terminal "."
-				Set pResults.Pass = $G(pResults.Pass) + 1
-			}
-			*/
+			Do:(class.Status="fail" && ..#Terminal) ..TerminalPrintFail()
+			 
+			Do:(class.Status="succeed" && ..#Terminal) ..TerminalPrintPass()
+			
+			
 			Do class.After()
 		}
 		
@@ -117,7 +109,6 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 	
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-		S ^CacheTemp.ham($I(^CacheTemp.ham),"treta forte") = $System.Status.GetErrorText(tSC)
 	}
 	Quit tSC
 }
@@ -129,7 +120,7 @@ ClassMethod TerminalCls()
 
 ClassMethod TerminalClass(pClassName As %String)
 {
-	Write *27,"[0m",pClassName,*27,"[0m",!
+	Write !,*27,"[0m",pClassName,*27,"[0m",!
 }
 
 ClassMethod TerminalPrintPass()
