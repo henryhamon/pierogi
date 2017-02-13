@@ -32,7 +32,6 @@ ClassMethod SpecTests(pClassname As %String, Output pTests) As %Status
 {
 	Set tSC = $$$OK
 	Try {
-		
 		Set pTests="",
 			tSql = "Select Name from %Dictionary.MethodDefinition " _
 				" Where parent = ? " _
@@ -46,7 +45,6 @@ ClassMethod SpecTests(pClassname As %String, Output pTests) As %Status
 		While tRS.%Next() {
 			Set $List(pTests, *+1) = tRS.%Get("Name")
 		}
-		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
@@ -80,29 +78,38 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 	Try {
 		Set class = $ClassMethod(pClass,"%New")
 		#Dim class As Pierogi.Spec
-		
 		$$$THROWONERROR(tSC, ..SpecTests(pClass, .specs))
-		
+		/*
 		If ..Terminal=$$$YES {
 			Do ..TerminalCls(),
 			   ..TerminalClass(pClass)
 		}
-		
+		*/
 		// LifeCycle
 		Do class.BeforeSetup()
-		
 		// For Each Test
 		For k=1:1:$ListLength(specs){
 			Set test = $List(specs,k)
+
 			Do class.Before()
-			
-			Set pResults.Test = $Increment(pResults.Test)
 			
 			$$$THROWONERROR(tSC, class.Results.Clear())
 			Do $Method(class, test)
-		
-			;I class.Status = "fail" 
+			S ^CacheTemp.ham($I(^CacheTemp.ham),"status") = class.Status
+			$$$THROWONERROR(tSC, pResults.Add(class.Status))
 			
+			/*
+			If ="fail" {
+				;Do:..Terminal ..TerminalPrintFail()
+				Write:'..Terminal "F"
+				Set pResults.Fail = $G(pResults.Fail) + 1
+			} 
+			If class.Status="succeed"  {
+				;Do:..Terminal ..TerminalPrintPass()
+				Write:'..Terminal "."
+				Set pResults.Pass = $G(pResults.Pass) + 1
+			}
+			*/
 			Do class.After()
 		}
 		
@@ -110,6 +117,7 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 	
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		S ^CacheTemp.ham($I(^CacheTemp.ham),"treta forte") = $System.Status.GetErrorText(tSC)
 	}
 	Quit tSC
 }

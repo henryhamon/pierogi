@@ -1,15 +1,30 @@
 Class Pierogi.Results Extends %SerialObject
 {
 
-Property Test As %Integer;
+Property Pass As %Integer [ InitialExpression = 0 ];
 
-Property Pass As %Integer;
-
-Property Fail As %Integer;
+Property Fail As %Integer [ InitialExpression = 0 ];
 
 Property All As %ArrayOfDataTypes;
 
 Property Status As %Status;
+
+Method Tests() As %Integer
+{
+	Quit ..Pass + ..Fail
+}
+
+Method Add(pStatus As %String) As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		Set:pStatus="fail" ..Fail = ..Fail + 1
+		Set:pStatus="succeed" ..Pass = ..Pass + 1
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
 
 <Storage name="Default">
 <Data name="ResultsState">
