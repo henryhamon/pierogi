@@ -56,7 +56,7 @@ ClassMethod Run() As Pierogi.Results
 	Set tResults = ##class(Pierogi.Results).%New()
 	Try {
 		Set tResults.Status = $$$OK
-		Do ..TerminalCls()
+		Do ##class(Pierogi.TerminalDisplay).Cls()
 		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
@@ -90,9 +90,9 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 			Do $Method(pClass, test)
 			$$$THROWONERROR(tSC, pResults.Add(pClass.Status))
 			
-			Do:(pClass.Status="fail" && ..#Terminal) ..TerminalPrintFail()
+			Do:(pClass.Status="fail" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Fail()
 			 
-			Do:(pClass.Status="succeed" && ..#Terminal) ..TerminalPrintPass()
+			Do:(pClass.Status="succeed" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Pass()
 			
 			
 			Do pClass.After()
@@ -114,7 +114,7 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 		$$$THROWONERROR(tSC, ..RunnableMethods(pClass, .specs))
 		
 		If ..#Terminal=$$$YES {
-			Do ..TerminalClass(pClass)
+			Do ##class(Pierogi.TerminalDisplay).Class(pClass)
 		}
 		
 		$$$THROWONERROR(tSC, ..LifecycleHooks(class, specs, .pResults))
@@ -123,30 +123,6 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
-}
-
-ClassMethod TerminalCls()
-{
-	Write #,!,*12
-}
-
-ClassMethod TerminalClass(pClassName As %String)
-{
-	Write !,*27,"[0m",pClassName,*27,"[0m",!
-}
-
-ClassMethod TerminalPrintPass()
-{
-	Write *27,"[32m",".",*27,"[0m"
-}
-
-ClassMethod TerminalPrintFail()
-{
-	Write *27,"[31m","F",*27,"[0m"
-}
-
-ClassMethod TerminalResume()
-{
 }
 
 }
