@@ -1,4 +1,4 @@
-Class Pierogi.Suite Extends %RegisteredObject [ Abstract ]
+Class Pierogi.Suite Extends (%RegisteredObject, Pierogi.DocTest) [ Abstract ]
 {
 
 Parameter Terminal = 1;
