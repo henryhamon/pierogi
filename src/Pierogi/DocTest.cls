@@ -1,19 +1,12 @@
 Class Pierogi.DocTest
 {
 
-/// Abstract method that should return the name of the package 
-/// where the project classes are located.
-ClassMethod DocTest() As %String [ Abstract ]
-{
-	Quit ""
-}
-
 ClassMethod GetDocCodes() As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {
 		
-		Set tSql = "Select Parent As Class, Name As Method, Description "_
+		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
 			" FROM %Dictionary.MethodDefinition "_
 			" Where parent %StartsWith ? " _
 			"   And Abstract = 0 " _
@@ -24,7 +17,7 @@ ClassMethod GetDocCodes() As %Status [ Internal ]
 		Set tRS = tStatement.execute(..DocTest())
 		
 		While tRS.%Next() {
-			$$$THROWONERROR(tSC, ..Parser(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Description") ))
+			$$$THROWONERROR(tSC, ..Parser(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block") ))
 		}
 		
 	} Catch tException {
@@ -33,7 +26,7 @@ ClassMethod GetDocCodes() As %Status [ Internal ]
 	Quit tSC
 }
 
-ClassMethod Parser(pClass As %String, pMethod As %String, pDescription As %String) As %Status [ Internal ]
+ClassMethod Parser(pClass As %String, pMethod As %String, pBlock As %String) As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {

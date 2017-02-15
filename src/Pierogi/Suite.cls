@@ -1,20 +1,48 @@
-Class Pierogi.Suite Extends (%RegisteredObject, Pierogi.DocTest) [ Abstract ]
+Class Pierogi.Suite Extends %RegisteredObject [ Abstract ]
 {
 
 Parameter Terminal = 1;
 
 /// Abstract method that should return the name of the package 
 /// where the test cases are located.
+ClassMethod SpecsPackage() As %String [ Abstract ]
+{
+	Quit ""
+}
+
+ClassMethod TestPackage() As %String [ Abstract ]
+{
+	Quit ""
+}
+
 ClassMethod Package() As %String [ Abstract ]
 {
 	Quit ""
+}
+
+/// Abstract method that should return the name of the package 
+/// where the project classes are located.
+ClassMethod ProjectPackage() As %String [ Abstract ]
+{
+	Quit ""
+}
+
+ClassMethod GetSpecsPackage() As %String [ Internal ]
+{
+	Set package = ..SpecsPackage()
+	Set:package="" package = ..TestPackage()
+	Set:package="" package = ..Package()
+	Quit package
 }
 
 /// Returns a list of specs and tests cases based on what is returned
 /// from the <method>Package</method> class method.
 ClassMethod Specs()
 {
-	Do $system.OBJ.GetPackageList(.classList, ..Package())
+	Set package = ..GetSpecsPackage()
+	Quit:package=""
+	
+	Do $system.OBJ.GetPackageList(.classList, package)
 	Set class = $Order(classList(""))
 	Set testList = ""
 	

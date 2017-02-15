@@ -3,7 +3,12 @@ Class PierogiTests.Pierogi.Suite Extends (%UnitTest.TestCase, PierogiTests.Piero
 
 Method TestPackageName()
 {
-	Do ..ItShouldBeEqual(##class(SampleTest.Suite).Package(),"SampleTest")
+	Do ..ItShouldBeEqual(##class(SampleTest.Suite).SpecsPackage(),"SampleTest")
+}
+
+Method TestDocTestPackageName()
+{
+	Do ..ItShouldBeEqual(##class(SampleTest.Suite).ProjectPackage(),"SamplePrj")
 }
 
 Method TestSpecList()
