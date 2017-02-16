@@ -24,5 +24,18 @@ ClassMethod Add(pN1, pN2) As %Integer
 	Q tResp
 }
 
+/// Multiplies the given numbers together.
+/// This example should be fail...
+/// <example>
+/// S FirstNumber = 1
+/// Set SecondNumber = 10
+/// Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator)Multiply(FirstNumber, SecondNumber)
+/// ; 10
+/// </example>
+ClassMethod Multiply(pN1, pN2) As %Integer
+{
+	Q pN1 + pN2
+}
+
 }
 
