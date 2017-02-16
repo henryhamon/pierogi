@@ -1,7 +1,9 @@
 Class Pierogi.DocTest
 {
 
-ClassMethod GetDocCodes() As %Status [ Internal ]
+Property Project As %String;
+
+Method GetDocCodes() As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {
@@ -14,7 +16,7 @@ ClassMethod GetDocCodes() As %Status [ Internal ]
 			" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
 		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
-		Set tRS = tStatement.execute(..DocTest())
+		Set tRS = tStatement.execute(..Project)
 		
 		While tRS.%Next() {
 			$$$THROWONERROR(tSC, ..Parser(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block") ))
@@ -26,7 +28,7 @@ ClassMethod GetDocCodes() As %Status [ Internal ]
 	Quit tSC
 }
 
-ClassMethod Parser(pClass As %String, pMethod As %String, pBlock As %String) As %Status [ Internal ]
+Method Parser(pClass As %String, pMethod As %String, pBlock As %String) As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {
