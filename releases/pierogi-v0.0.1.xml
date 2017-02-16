@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-13 16:33:31">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-16 16:12:16">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
-<TimeChanged>64323,55311.57982</TimeChanged>
+<TimeChanged>64330,58057.944261</TimeChanged>
 <TimeCreated>64322,62300.698768</TimeCreated>
 
 <Property name="Number">
@@ -66,6 +66,12 @@ The Expectation that this Assert belongs</Description>
 <Value name="5">
 <Value>Expectation</Value>
 </Value>
+<Value name="6">
+<Value>x</Value>
+</Value>
+<Value name="7">
+<Value>xyz</Value>
+</Value>
 </Data>
 </Storage>
 </Class>
@@ -73,7 +79,7 @@ The Expectation that this Assert belongs</Description>
 
 <Class name="Pierogi.Assertions">
 <Abstract>1</Abstract>
-<TimeChanged>64327,59356.715725</TimeChanged>
+<TimeChanged>64329,39388.296121</TimeChanged>
 <TimeCreated>64323,54295.847656</TimeCreated>
 
 <Property name="Status">
@@ -92,11 +98,16 @@ The Expectation that this Assert belongs</Description>
 <Collection>list</Collection>
 </Property>
 
+<Property name="Succeeds">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
 <Method name="True">
 <Description>
 Assert that value is true.</Description>
 <FormalSpec>pValue:%Boolean</FormalSpec>
-<Implementation><![CDATA[	Do ..Results.Insert(..Test("True", pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
+<Implementation><![CDATA[	Do ..SetResults(..Test("True", pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
 ]]></Implementation>
 </Method>
 
@@ -104,7 +115,7 @@ Assert that value is true.</Description>
 <Description>
 Assert that value is false.</Description>
 <FormalSpec>pValue:%Boolean</FormalSpec>
-<Implementation><![CDATA[	Do ..Results.Insert(..Test("False", 'pValue, ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))))
+<Implementation><![CDATA[	Do ..SetResults(..Test("False", 'pValue, ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))))
 ]]></Implementation>
 </Method>
 
@@ -115,7 +126,7 @@ Assert that status is OK</Description>
 <Implementation><![CDATA[
 	Set st="Status OK", actual = st
 	Set:$$$ISERR(pValue) actual = $System.Status.GetErrorText(pValue)
-	Do ..Results.Insert(..Test("Ok", $$$ISOK(pValue), ..Message(st, actual)))
+	Do ..SetResults(..Test("Ok", $$$ISOK(pValue), ..Message(st, actual)))
 ]]></Implementation>
 </Method>
 
@@ -126,7 +137,7 @@ Assert that status is Not OK</Description>
 <Implementation><![CDATA[
 	Set st="Status Not OK", actual = st
 	Set:$$$ISOK(pValue) actual = "Status OK"
-	Do ..Results.Insert(..Test("NotOk", $$$ISERR(pValue), ..Message(st, actual)))
+	Do ..SetResults(..Test("NotOk", $$$ISERR(pValue), ..Message(st, actual)))
 ]]></Implementation>
 </Method>
 
@@ -152,8 +163,6 @@ Assert that status is Not OK</Description>
 	If tAssert.Ok=$$$NO {
 		Set tAssert.Msg = pMessage,
 			..Status = "fail"
-		
-		Do ..Fails.Insert(tAssert) // Temporary solution TODO: must refactor
 	}
 	
 	Quit tAssert
@@ -162,6 +171,78 @@ Assert that status is Not OK</Description>
 
 <Method name="Status">
 <Implementation><![CDATA[	Quit ..Status
+]]></Implementation>
+</Method>
+
+<Method name="SetResults">
+<FormalSpec>pAssert:Pierogi.Assert</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Do ..Results.Insert(pAssert)
+		
+		If pAssert.Ok {
+			Do ..Succeeds.Insert(pAssert)
+		} Else {
+			Do ..Fails.Insert(pAssert) 
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Pierogi.DocTest">
+<TimeChanged>64329,56900.846668</TimeChanged>
+<TimeCreated>64328,36995.575722</TimeCreated>
+
+<Property name="Project">
+<Type>%String</Type>
+</Property>
+
+<Method name="GetDocCodes">
+<Internal>1</Internal>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		
+		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
+			" FROM %Dictionary.MethodDefinition "_
+			" Where parent %StartsWith ? " _
+			"   And Abstract = 0 " _
+			"   And (Description like '%Examples%' OR Description like '%<example>%') "_
+			" Order by SequenceNumber ",
+			tStatement =  ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		Set tRS = tStatement.execute(..Project)
+		
+		While tRS.%Next() {
+			$$$THROWONERROR(tSC, ..Parser(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block") ))
+		}
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Parser">
+<Internal>1</Internal>
+<FormalSpec>pClass:%String,pMethod:%String,pBlock:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 ]]></Implementation>
 </Method>
 </Class>
@@ -283,7 +364,7 @@ Assert that status is Not OK</Description>
 
 <Class name="Pierogi.Results">
 <Super>%SerialObject</Super>
-<TimeChanged>64327,58947.334268</TimeChanged>
+<TimeChanged>64329,62282.039185</TimeChanged>
 <TimeCreated>64324,54759.739853</TimeCreated>
 
 <Property name="Pass">
@@ -391,16 +472,14 @@ Assert that status is Not OK</Description>
 <Class name="Pierogi.Suite">
 <Abstract>1</Abstract>
 <Super>%RegisteredObject</Super>
-<TimeChanged>64327,59336.142731</TimeChanged>
+<TimeChanged>64329,31719.854195</TimeChanged>
 <TimeCreated>64322,58801.760167</TimeCreated>
 
-<Property name="Terminal">
-<Type>%Boolean</Type>
-<InitialExpression>1</InitialExpression>
-<Private>1</Private>
-</Property>
+<Parameter name="Terminal">
+<Default>1</Default>
+</Parameter>
 
-<Method name="Package">
+<Method name="SpecsPackage">
 <Description>
 Abstract method that should return the name of the package 
 where the test cases are located.</Description>
@@ -411,13 +490,55 @@ where the test cases are located.</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="TestPackage">
+<Abstract>1</Abstract>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="Package">
+<Abstract>1</Abstract>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="ProjectPackage">
+<Description>
+Abstract method that should return the name of the package 
+where the project classes are located.</Description>
+<Abstract>1</Abstract>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="GetSpecsPackage">
+<Internal>1</Internal>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set package = ..SpecsPackage()
+	Set:package="" package = ..TestPackage()
+	Set:package="" package = ..Package()
+	Quit package
+]]></Implementation>
+</Method>
+
 <Method name="Specs">
 <Description><![CDATA[
 Returns a list of specs and tests cases based on what is returned
 from the <method>Package</method> class method.]]></Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[
-	Do $system.OBJ.GetPackageList(.classList, ..Package())
+	Set package = ..GetSpecsPackage()
+	Quit:package=""
+	
+	Do $system.OBJ.GetPackageList(.classList, package)
 	Set class = $Order(classList(""))
 	Set testList = ""
 	
@@ -432,7 +553,7 @@ from the <method>Package</method> class method.]]></Description>
 ]]></Implementation>
 </Method>
 
-<Method name="SpecTests">
+<Method name="RunnableMethods">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pClassname:%String,*pTests</FormalSpec>
 <ReturnType>%Status</ReturnType>
@@ -466,6 +587,7 @@ from the <method>Package</method> class method.]]></Description>
 	Set tResults = ##class(Pierogi.Results).%New()
 	Try {
 		Set tResults.Status = $$$OK
+		Do ##class(Pierogi.TerminalDisplay).Cls()
 		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
@@ -483,6 +605,43 @@ from the <method>Package</method> class method.]]></Description>
 ]]></Implementation>
 </Method>
 
+<Method name="LifecycleHooks">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[pClass,pRunnableMethods,&pResults:Pierogi.Results]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		
+		// LifeCycleHooks
+		Do pClass.BeforeSetup()
+		// For Each Test
+		For k=1:1:$ListLength(pRunnableMethods){
+			Set test = $List(pRunnableMethods,k)
+
+			Do pClass.Before()
+			
+			$$$THROWONERROR(tSC, pClass.Results.Clear())
+			Do $Method(pClass, test)
+			$$$THROWONERROR(tSC, pResults.Add(pClass.Status))
+			
+			Do:(pClass.Status="fail" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Fail()
+			 
+			Do:(pClass.Status="succeed" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Pass()
+			
+			
+			Do pClass.After()
+		}
+		
+		Do pClass.AfterSetup()
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
 <Method name="RunTest">
 <ClassMethod>1</ClassMethod>
 <FormalSpec><![CDATA[pClass:%String,&pResults:Pierogi.Results]]></FormalSpec>
@@ -493,82 +652,68 @@ from the <method>Package</method> class method.]]></Description>
 	Try {
 		Set class = $ClassMethod(pClass,"%New")
 		#Dim class As Pierogi.Spec
-		$$$THROWONERROR(tSC, ..SpecTests(pClass, .specs))
-		/*
-		If ..Terminal=$$$YES {
-			Do ..TerminalCls(),
-			   ..TerminalClass(pClass)
-		}
-		*/
-		// LifeCycle
-		Do class.BeforeSetup()
-		// For Each Test
-		For k=1:1:$ListLength(specs){
-			Set test = $List(specs,k)
-
-			Do class.Before()
-			
-			$$$THROWONERROR(tSC, class.Results.Clear())
-			Do $Method(class, test)
-			S ^CacheTemp.ham($I(^CacheTemp.ham),"status") = class.Status
-			$$$THROWONERROR(tSC, pResults.Add(class.Status))
-			
-			/*
-			If ="fail" {
-				;Do:..Terminal ..TerminalPrintFail()
-				Write:'..Terminal "F"
-				Set pResults.Fail = $G(pResults.Fail) + 1
-			} 
-			If class.Status="succeed"  {
-				;Do:..Terminal ..TerminalPrintPass()
-				Write:'..Terminal "."
-				Set pResults.Pass = $G(pResults.Pass) + 1
-			}
-			*/
-			Do class.After()
+		$$$THROWONERROR(tSC, ..RunnableMethods(pClass, .specs))
+		
+		If ..#Terminal=$$$YES {
+			Do ##class(Pierogi.TerminalDisplay).Class(pClass)
 		}
 		
-		Do class.AfterSetup()
+		$$$THROWONERROR(tSC, ..LifecycleHooks(class, specs, .pResults))
 	
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-		S ^CacheTemp.ham($I(^CacheTemp.ham),"treta forte") = $System.Status.GetErrorText(tSC)
 	}
 	Quit tSC
 ]]></Implementation>
 </Method>
+</Class>
 
-<Method name="TerminalCls">
+
+<Class name="Pierogi.TerminalDisplay">
+<TimeChanged>64328,35971.900379</TimeChanged>
+<TimeCreated>64328,35948.921536</TimeCreated>
+
+<Method name="Cls">
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write #,!,*12
 ]]></Implementation>
 </Method>
 
-<Method name="TerminalClass">
+<Method name="Class">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pClassName:%String</FormalSpec>
-<Implementation><![CDATA[	Write *27,"[0m",pClassName,*27,"[0m",!
+<Implementation><![CDATA[	Write !,*27,"[0m",pClassName,*27,"[0m",!
 ]]></Implementation>
 </Method>
 
-<Method name="TerminalPrintPass">
+<Method name="Pass">
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write *27,"[32m",".",*27,"[0m"
 ]]></Implementation>
 </Method>
 
-<Method name="TerminalPrintFail">
+<Method name="Fail">
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write *27,"[31m","F",*27,"[0m"
 ]]></Implementation>
 </Method>
 
-<Method name="TerminalResume">
+<Method name="Resume">
 <ClassMethod>1</ClassMethod>
 </Method>
 </Class>
 
 
+
+
+<Class name="PierogiTests.Pierogi.DocTest">
+<Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
+<TimeChanged>64329,31017.389388</TimeChanged>
+<TimeCreated>64328,36695.631547</TimeCreated>
+
+<Method name="TestRun">
+</Method>
+</Class>
 
 
 <Class name="PierogiTests.Pierogi.Ensemble.Core">
@@ -888,11 +1033,16 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Suite">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64327,58911.97517</TimeChanged>
+<TimeChanged>64329,31618.005804</TimeChanged>
 <TimeCreated>64324,30757.305069</TimeCreated>
 
 <Method name="TestPackageName">
-<Implementation><![CDATA[	Do ..ItShouldBeEqual(##class(SampleTest.Suite).Package(),"SampleTest")
+<Implementation><![CDATA[	Do ..ItShouldBeEqual(##class(SampleTest.Suite).SpecsPackage(),"SampleTest")
+]]></Implementation>
+</Method>
+
+<Method name="TestDocTestPackageName">
+<Implementation><![CDATA[	Do ..ItShouldBeEqual(##class(SampleTest.Suite).ProjectPackage(),"SamplePrj")
 ]]></Implementation>
 </Method>
 
@@ -905,11 +1055,11 @@ from the <method>Package</method> class method.]]></Description>
 ]]></Implementation>
 </Method>
 
-<Method name="TestListAllSpecMethods">
+<Method name="TestListAllRunnableMethods">
 <Implementation><![CDATA[
 	Set specClass = $List(##class(SampleTest.Suite).Specs(),1)
 	Do ..ItShouldBeEqual( specClass, "SampleTest.spec01")
-	Do ..ItShouldBeOk(##class(SampleTest.Suite).SpecTests(specClass, .tests))
+	Do ..ItShouldBeOk(##class(SampleTest.Suite).RunnableMethods(specClass, .tests))
 	Do ..ItShouldBeEqual( $ListLength(tests), 2)
 	Do ..ItShouldBeEqual( $List(tests, 1),"ShouldTestOne")
 	Do ..ItShouldBeEqual( $List(tests, 2),"ShouldFail")
@@ -996,7 +1146,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64327,59393.353727</TimeChanged>
+<TimeChanged>64329,40102.339289</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -1044,7 +1194,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>14.2857%</Selectivity>
+<Selectivity>10.0000%</Selectivity>
 </Property>
 <Property name="Name">
 <Selectivity>10.0000%</Selectivity>
@@ -1060,8 +1210,10 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 
 <Class name="SamplePrj.PierogiDelivery.Data.Flavors">
+<Description>
+This class contain a Pierogi DocTest Sample</Description>
 <Super>%Persistent</Super>
-<TimeChanged>64327,50466.611252</TimeChanged>
+<TimeChanged>64327,59815.840687</TimeChanged>
 <TimeCreated>64317,38590.488901</TimeCreated>
 
 <Property name="Name">
@@ -1435,6 +1587,57 @@ Write flavor.Price
 </Value>
 </Data>
 </Storage>
+</Class>
+
+
+<Class name="SamplePrj.PierogiDelivery.Ope.Calculator">
+<TimeChanged>64330,58235.234857</TimeChanged>
+<TimeCreated>64330,33772.402014</TimeCreated>
+
+<Method name="Add">
+<Description><![CDATA[
+Adds the given numbers together.
+
+<example>
+W ##class(SamplePrj.PierogiDelivery.Ope.Calculator).Add(1, 2)
+; 3
+S FirstNumber = 1
+Set SecondNumber = 10
+Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator).Add(FirstNumber, SecondNumber)
+; 11
+</example>
+
+Returns null if the given arguments don't add up nicely.
+<example>
+Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator).Add("a", 42)
+; 
+</example>]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pN1,pN2</FormalSpec>
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[
+	Set tResp = ""
+	Set:((pN1?.N.1".".N)&&(pN2?.N.1".".N)) tResp = pN1 + pN2
+	Quit tResp
+]]></Implementation>
+</Method>
+
+<Method name="Multiply">
+<Description><![CDATA[
+Multiplies the given numbers together.
+This example should be fail...
+<example>
+S FirstNumber = 1
+Set SecondNumber = 10
+Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator)Multiply(FirstNumber, SecondNumber)
+; 10
+</example>]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pN1,pN2</FormalSpec>
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[	Q pN1 + pN2
+]]></Implementation>
+</Method>
 </Class>
 
 
@@ -2179,16 +2382,26 @@ Write flavor.Price
 
 <Class name="SampleTest.Suite">
 <Super>Pierogi.Suite</Super>
-<TimeChanged>64324,31662.999242</TimeChanged>
+<TimeChanged>64329,31586.88927</TimeChanged>
 <TimeCreated>64324,31597.383141</TimeCreated>
 
-<Method name="Package">
+<Method name="SpecsPackage">
 <Description>
 Abstract method that should return the name of the package 
 where the test cases are located.</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[	Quit "SampleTest"
+]]></Implementation>
+</Method>
+
+<Method name="ProjectPackage">
+<Description>
+Abstract method that should return the name of the package 
+where the project classes are located.</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit "SamplePrj"
 ]]></Implementation>
 </Method>
 </Class>
@@ -3726,16 +3939,16 @@ Male Gender = 1</Description>
 
 
 
-<Project name="pierogi_system" LastModified="2017-02-13 16:33:28.221458">
+<Project name="pierogi_system" LastModified="2017-02-16 16:11:48.982981">
   <Items>
     <ProjectItem name="Pierogi" type="PKG"></ProjectItem>
     <ProjectItem name="PierogiTests" type="PKG"></ProjectItem>
     <ProjectItem name="PierogiTests.Pierogi" type="CLS"></ProjectItem>
     <ProjectItem name="SamplePrj" type="PKG"></ProjectItem>
+    <ProjectItem name="SampleTest" type="PKG"></ProjectItem>
     <ProjectItem name="SampleTest.PierogiTest01" type="CLS"></ProjectItem>
     <ProjectItem name="SampleTest.PierogiTest02" type="CLS"></ProjectItem>
     <ProjectItem name="cosFaker" type="PKG"></ProjectItem>
-    <ProjectItem name="SampleTest" type="PKG"></ProjectItem>
   </Items>
 </Project>
 </Export>
