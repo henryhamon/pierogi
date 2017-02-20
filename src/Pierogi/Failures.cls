@@ -10,7 +10,7 @@ Property Asserts As list Of Pierogi.Assert;
 Method %OnNew(pClassName As %String = "", pSpecTest As %String = "") As %Status [ Private, ServerOnly = 1 ]
 {
 	Set:pClassName'="" ..ClassName = pClassName
-	Set:pSpecTest'="" ..ClassName = pSpecTest
+	Set:pSpecTest'="" ..SpecTest = pSpecTest
 	Quit $$$OK
 }
 
