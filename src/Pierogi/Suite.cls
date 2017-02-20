@@ -119,7 +119,6 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 			$$$THROWONERROR(tSC, pResults.Add(pClass, test))
 			
 			Do:(pClass.Status="fail" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Fail()
-			 
 			Do:(pClass.Status="succeed" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Pass()
 			
 			
