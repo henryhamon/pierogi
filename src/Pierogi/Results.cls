@@ -15,19 +15,19 @@ Method Tests() As %Integer
 	Quit ..Pass + ..Fail
 }
 
-Method Add(pClass, pSpec As %String) As %Status
+Method Add(pClass, pSpec As %String = "") As %Status
 {
 	Set tSC = $$$OK
 	Try {
-		
 		Set:pClass.Status="succeed" ..Pass = ..Pass + 1
 		If pClass.Status="fail" {
 			Set ..Fail = ..Fail + 1
 			Set failure = ##class(Pierogi.Failures).%New($ClassName(pClass), pSpec)
-			For k=1:1:pClass.Fails.Count {
+			For k=1:1:pClass.Fails.Count() {
 				Set assertFail = pClass.Fails.GetAt(k)
 				$$$THROWONERROR(tSC, failure.Asserts.Insert(assertFail))
 			}
+			$$$THROWONERROR(tSC, ..Failures.Insert(failure))
 		}
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
