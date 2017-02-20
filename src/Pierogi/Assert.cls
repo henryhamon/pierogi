@@ -39,6 +39,12 @@ Method %OnNew(pLastNumber As %Integer = 0) As %Status [ Private, ServerOnly = 1 
 <Value name="5">
 <Value>Expectation</Value>
 </Value>
+<Value name="6">
+<Value>x</Value>
+</Value>
+<Value name="7">
+<Value>xyz</Value>
+</Value>
 </Data>
 <State>AssertState</State>
 <StreamLocation>^Pierogi.AssertS</StreamLocation>

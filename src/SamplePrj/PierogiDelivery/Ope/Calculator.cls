@@ -21,7 +21,7 @@ ClassMethod Add(pN1, pN2) As %Integer
 {
 	Set tResp = ""
 	Set:((pN1?.N.1".".N)&&(pN2?.N.1".".N)) tResp = pN1 + pN2
-	Q tResp
+	Quit tResp
 }
 
 /// Multiplies the given numbers together.
