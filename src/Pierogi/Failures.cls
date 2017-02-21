@@ -14,7 +14,7 @@ Method %OnNew(pClassName As %String = "", pSpecTest As %String = "", pFailAssert
 	Try {
 		Set:pClassName'="" ..ClassName = pClassName
 		Set:pSpecTest'="" ..SpecTest = pSpecTest
-		I $ISO(pFailAsserts) {
+		If $IsObject(pFailAsserts) {
 			For k=1:1:pFailAsserts.Count() {
 				Set assertFail = pFailAsserts.GetAt(k)
 				$$$THROWONERROR(tSC, ..Asserts.Insert(assertFail))

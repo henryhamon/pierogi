@@ -1,14 +1,13 @@
 Class Pierogi.DocTest
 {
 
-Property Project As %String;
-
-Method Run() As %Status
+ClassMethod Run(pProjectPackage As %String, ByRef pResults As Pierogi.Results = "") As %Status
 {
 	Set tSC = $$$OK
+	Set:pResults="" pResults = ##class(Pierogi.Results).%New()
 	Try {
-		Set tResults = ##class(Pierogi.Results).%New(),
-			tSql = "Select Parent As Class, Name As Method, Description As Block "_
+		
+		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
 			" FROM %Dictionary.MethodDefinition "_
 			" Where parent %StartsWith ? " _
 			"   And Abstract = 0 " _
@@ -16,22 +15,22 @@ Method Run() As %Status
 			" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
 		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
-		Set tRS = tStatement.execute(..Project)
+		Set tRS = tStatement.execute(pProjectPackage)
 		
 		While tRS.%Next() {
-			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block"), .tResults ))
+			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block"), .pResults ))
 		}
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-		Set tResults.Status = "exception",
+		Set pResults.Status = "exception",
 			tDescError = $System.Status.GetErrorText(tSC)
-		Do tResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
+		Do pResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
 	}
 	Quit tSC
 }
 
-Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
+ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {
@@ -87,6 +86,7 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 		If bFail {
 			Set pResults.Status = "fail"
 			Set pResults.Fail = pResults.Fail + 1
+			$$$THROWONERROR(tSC, pResults.Failures.Insert(##class(Pierogi.Failures).%New(pClass, pMethod, failures)))
 		} Else {
 			Set pResults.Pass = pResults.Pass + 1
 		}
