@@ -7,11 +7,23 @@ Property SpecTest As %String;
 
 Property Asserts As list Of Pierogi.Assert;
 
-Method %OnNew(pClassName As %String = "", pSpecTest As %String = "") As %Status [ Private, ServerOnly = 1 ]
+Method %OnNew(pClassName As %String = "", pSpecTest As %String = "", pFailAsserts As %ListOfObjects = "") As %Status [ Private, ServerOnly = 1 ]
 {
-	Set:pClassName'="" ..ClassName = pClassName
-	Set:pSpecTest'="" ..SpecTest = pSpecTest
-	Quit $$$OK
+	
+	Set tSC = $$$OK
+	Try {
+		Set:pClassName'="" ..ClassName = pClassName
+		Set:pSpecTest'="" ..SpecTest = pSpecTest
+		I $ISO(pFailAsserts) {
+			For k=1:1:pFailAsserts.Count() {
+				Set assertFail = pFailAsserts.GetAt(k)
+				$$$THROWONERROR(tSC, ..Asserts.Insert(assertFail))
+			}
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 }
 
 <Storage name="Default">
