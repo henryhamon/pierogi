@@ -24,6 +24,9 @@ Method Run() As %Status
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = "exception",
+			tDescError = $System.Status.GetErrorText(tSC)
+		Do tResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
 	}
 	Quit tSC
 }
@@ -32,7 +35,9 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 {
 	Set tSC = $$$OK
 	Try {
-		Set asserts = ##class(%ListOfObjects).%New(), bFail = $$$NO
+		Set asserts = ##class(%ListOfObjects).%New(), 
+			failures = ##class(%ListOfObjects).%New(),
+			bFail = $$$NO
 		$$$THROWONERROR(tSC, ..GetCodeBlock(pBlock, .Code))
 		
 		For k=1:1:$ListLength(Code){
@@ -71,12 +76,20 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 					
 					Set assert = ##class(Pierogi.Assert).Satisfy(asserts.Count(), "", tExpect = tResult, tMessage)
 					$$$THROWONERROR(tSC, asserts.Insert(assert))
-					Set:assert.Ok=$$$NO bFail=$$$YES
+					If assert.Ok=$$$NO {
+						Set bFail=$$$YES
+						$$$THROWONERROR(tSC, failures.Insert(assert))
+					}
 				}
 			}
 		}
 			
-		Set:bFail pResults.Status = "fail"
+		If bFail {
+			Set pResults.Status = "fail"
+			Set pResults.Fail = pResults.Fail + 1
+		} Else {
+			Set pResults.Pass = pResults.Pass + 1
+		}
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
