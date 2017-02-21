@@ -88,7 +88,6 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 		}
 			
 		If bFail {
-			Set pResults.Status = "fail"
 			Set pResults.Fail = pResults.Fail + 1
 			$$$THROWONERROR(tSC, pResults.Failures.Insert(##class(Pierogi.Failures).%New(pClass, pMethod, failures)))
 			
@@ -102,7 +101,7 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		
-		Set pResults.Status = "fail",
+		Set pResults.Status = tSC,
 			tDescError = $System.Status.GetErrorText(tSC), 
 			pResults.Fail = pResults.Fail + 1,
 			failure = ##class(Pierogi.Failures).%New(pClass, pMethod) 

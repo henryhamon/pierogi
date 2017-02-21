@@ -27,5 +27,12 @@ Method ItShouldBeOk(pStatus)
 	Do $$$AssertStatusOK(pStatus, "[Expected]: OK [Got]: "_$Get(descerr))
 }
 
+Method ItShouldNotBeOk(pStatus)
+{
+	Set descerr = "OK"
+	Set:$$$ISERR(pStatus) descerr = $System.Status.GetErrorText(pStatus)
+	Do $$$AssertStatusNotOK(pStatus, "[Expected]: ERR [Got]: "_$Get(descerr))
+}
+
 }
 

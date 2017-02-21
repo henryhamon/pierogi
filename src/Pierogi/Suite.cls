@@ -108,7 +108,6 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 {
 	Set tSC = $$$OK
 	Try {
-		
 		// LifeCycleHooks
 		Do pClass.BeforeSetup()
 		// For Each Test
@@ -123,7 +122,6 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 			
 			Do:(pClass.Status="fail" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Fail()
 			Do:(pClass.Status="succeed" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Pass()
-			
 			
 			Do pClass.After()
 		}
