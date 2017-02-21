@@ -37,21 +37,16 @@ Method NotOk(pValue)
 	Do ..SetResults(..Test("NotOk", $$$ISERR(pValue), ..Message(st, actual)))
 }
 
-ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String [ Private ]
+ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "
 	Quit "Expected: " _ $Get(pExpected) _ pBR _"Actual: "_$Get(pGot)
 }
 
-Method Test(pName As %String, pResult As %Boolean = 0, pMessage As %String) As Pierogi.Assert [ Private ]
+Method Test(pName As %String, pResult As %Boolean = 0, pMessage As %String = "") As Pierogi.Assert [ Private ]
 {
-	Set tAssert = ##class(Pierogi.Assert).%New( ..Results.Count() ), 
-		tAssert.Ok = pResult, 
-		tAssert.Name = pName
-	If tAssert.Ok=$$$NO {
-		Set tAssert.Msg = pMessage,
-			..Status = "fail"
-	}
+	Set tAssert = ##class(Pierogi.Assert).Satisfy( ..Results.Count(), pName, pResult, pMessage )
+	Set:tAssert.Ok=$$$NO ..Status = "fail"
 	
 	Quit tAssert
 }

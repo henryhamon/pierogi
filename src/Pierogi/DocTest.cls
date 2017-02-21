@@ -3,12 +3,12 @@ Class Pierogi.DocTest
 
 Property Project As %String;
 
-Method GetDocCodes() As %Status [ Internal ]
+Method Run() As %Status
 {
 	Set tSC = $$$OK
 	Try {
-		
-		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
+		Set tResults = ##class(Pierogi.Results).%New(),
+			tSql = "Select Parent As Class, Name As Method, Description As Block "_
 			" FROM %Dictionary.MethodDefinition "_
 			" Where parent %StartsWith ? " _
 			"   And Abstract = 0 " _
@@ -19,7 +19,7 @@ Method GetDocCodes() As %Status [ Internal ]
 		Set tRS = tStatement.execute(..Project)
 		
 		While tRS.%Next() {
-			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block") ))
+			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block"), .tResults ))
 		}
 		
 	} Catch tException {
@@ -28,21 +28,15 @@ Method GetDocCodes() As %Status [ Internal ]
 	Quit tSC
 }
 
-Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String) As %Status [ Internal ]
+Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {
-		For k=1:1:$ListLength(pBlock) {
-			Set value = $List(pBlock,k)
-			
-			Set:($Find(value,"<pre>")||$Find(value,"<example>")) pre = $$$YES
-			Set:($Find(value,"</pre>")||$Find(value,"</example>")) pre = $$$NO
-			
-			Set:pre=$$$YES $List(doctest, *+1) = value
-		}
+		Set asserts = ##class(%ListOfObjects).%New(), bFail = $$$NO
+		$$$THROWONERROR(tSC, ..GetCodeBlock(pBlock, .Code))
 		
-		For k=1:1:$ListLength(doctest){
-			Set value = $List(doctest,k)
+		For k=1:1:$ListLength(Code){
+			Set value = $List(Code,k)
 			If (($Find(value,">> ")) || ('$Find(value,"; "))){
 				Set value = $Replace(value,">> ","")
 				
@@ -66,16 +60,43 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String)
 				Set action = $FIND($ZConvert(value,"U"),"WRITE ")
 				Set:action=0 action = $FIND($ZConvert(value,"U"),"W ",0)
 				If action>0 {
-					Set action = "ac2 = " _ $Extract(value,action,*)
+					Set action = "InternalDocTest2 = " _ $Extract(value,action,*)
 					Set @action
-					Set action = "ac2"
-					Set ac3 = @action
-					Write !,$Get(ac3)," - ",$Replace($Replace($List(doctest,k+1),$Char(9),""),"; ",""),!
+					Set action = "InternalDocTest2"
+					Set InternalDocTest = @action
+					
+					Set tResult =$Replace($Replace($List(Code,k+1),$Char(9),""),"; ",""), 
+						tExpect = $Get(InternalDocTest)
+					Set tMessage = ##class(Pierogi.Assertions).Message(tExpect, tResult)
+					
+					Set assert = ##class(Pierogi.Assert).Satisfy(asserts.Count(), "", tExpect = tResult, tMessage)
+					$$$THROWONERROR(tSC, asserts.Insert(assert))
+					Set:assert.Ok=$$$NO bFail=$$$YES
 				}
 			}
 		}
 			
+		Set:bFail pResults.Status = "fail"
 		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		
+	}
+	Quit tSC
+}
+
+ClassMethod GetCodeBlock(pBlock As %String, Output pCodeBlock) As %Status [ Private ]
+{
+	Set tSC = $$$OK, pCodeBlock = ""
+	Try {
+		For k=1:1:$ListLength(pBlock) {
+			Set value = $List(pBlock,k)
+			
+			Set:($Find(value,"<pre>")||$Find(value,"<example>")) pre = $$$YES
+			Set:($Find(value,"</pre>")||$Find(value,"</example>")) pre = $$$NO
+			
+			Set:pre=$$$YES $List(pCodeBlock, *+1) = value
+		}
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
