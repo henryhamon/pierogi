@@ -95,7 +95,8 @@ ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %St
 		Set pResults.Status = "exception",
 			tDescError = $System.Status.GetErrorText(tSC)
 		Do pResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
-		S tSC = $$$OK
+		// If got an error, report it and keep going
+		Set tSC = $$$OK
 	}
 	Quit tSC
 }
