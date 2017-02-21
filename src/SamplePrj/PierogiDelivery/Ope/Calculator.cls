@@ -37,5 +37,17 @@ ClassMethod Multiply(pN1, pN2) As %Integer
 	Q pN1 + pN2
 }
 
+/// This example should generate an Exception,<br>
+/// because the method is calling without "." (dot) <br>
+/// On Example code:
+/// <example>
+/// Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator)Exception(FirstNumber, SecondNumber)
+/// ; 10
+/// </example>
+ClassMethod Exception() As %Status
+{
+	Quit $$$ERROR(5002,"Exception")
+}
+
 }
 

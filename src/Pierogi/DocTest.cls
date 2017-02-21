@@ -6,6 +6,8 @@ ClassMethod Run(pProjectPackage As %String, ByRef pResults As Pierogi.Results = 
 	Set tSC = $$$OK
 	Set:pResults="" pResults = ##class(Pierogi.Results).%New()
 	Try {
+		Set:pProjectPackage="" tSC = $$$ERROR(5002,"Project Package missing")
+		Throw:$$$ISERR(tSC)
 		
 		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
 			" FROM %Dictionary.MethodDefinition "_
