@@ -86,6 +86,9 @@ ClassMethod Run() As Pierogi.Results
 		Set tResults.Status = $$$OK
 		Do ##class(Pierogi.TerminalDisplay).Cls()
 		
+		// Run DocTest
+		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
+		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
 			
@@ -139,13 +142,20 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 		Set class = $ClassMethod(pClass,"%New")
 		#Dim class As Pierogi.Spec
 		$$$THROWONERROR(tSC, ..RunnableMethods(pClass, .specs))
-		
-		If ..#Terminal=$$$YES {
-			Do ##class(Pierogi.TerminalDisplay).Class(pClass)
-		}
-		
 		$$$THROWONERROR(tSC, ..LifecycleHooks(class, specs, .pResults))
-	
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod RunDocTests(ByRef pResults As Pierogi.Results) As %Status [ Private ]
+{
+	Set tSC = $$$OK
+	Quit:..ProjectPackage()="" tSC
+	Try {
+		Set DocTest = ##class(Pierogi.DocTest).%New(..ProjectPackage(), ..#Terminal)
+		$$$THROWONERROR(tSC, DocTest.Run(.pResults))
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}

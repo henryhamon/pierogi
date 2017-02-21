@@ -35,12 +35,12 @@ Method TestRun()
 	
 	Set results = ##class(SampleTest.Suite).Run()
 	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
-	Do ..ItShouldBeEqual(results.Tests(),2)
-	Do ..ItShouldBeEqual(results.Pass,1)
-	Do ..ItShouldBeEqual(results.Fail,1)
-	Do ..ItShouldBeEqual(results.Failures.Count(),1)
-	Do ..ItShouldBeEqual(results.Failures.GetAt(1).ClassName,"SampleTest.spec01")
-	Do ..ItShouldBeEqual(results.Failures.GetAt(1).SpecTest,"ShouldFail")
+	Do ..ItShouldBeEqual(results.Tests(),7)
+	Do ..ItShouldBeEqual(results.Pass,4)
+	Do ..ItShouldBeEqual(results.Fail,3)
+	Do ..ItShouldBeEqual(results.Failures.Count(),3)
+	Do ..ItShouldBeEqual(results.Failures.GetAt(1).ClassName,"SamplePrj.PierogiDelivery.Ope.Calculator")
+	Do ..ItShouldBeEqual(results.Failures.GetAt(1).SpecTest,"Multiply")
 }
 
 }
