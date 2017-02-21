@@ -23,9 +23,6 @@ ClassMethod Run(pProjectPackage As %String, ByRef pResults As Pierogi.Results = 
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-		Set pResults.Status = "exception",
-			tDescError = $System.Status.GetErrorText(tSC)
-		Do pResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
 	}
 	Quit tSC
 }
@@ -79,6 +76,8 @@ ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %St
 						Set bFail=$$$YES
 						$$$THROWONERROR(tSC, failures.Insert(assert))
 					}
+					
+					Kill InternalDocTest, InternalDocTest2
 				}
 			}
 		}
@@ -93,7 +92,10 @@ ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %St
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-		
+		Set pResults.Status = "exception",
+			tDescError = $System.Status.GetErrorText(tSC)
+		Do pResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
+		S tSC = $$$OK
 	}
 	Quit tSC
 }
@@ -102,8 +104,12 @@ ClassMethod GetCodeBlock(pBlock As %String, Output pCodeBlock) As %Status [ Priv
 {
 	Set tSC = $$$OK, pCodeBlock = ""
 	Try {
-		For k=1:1:$ListLength(pBlock) {
-			Set value = $List(pBlock,k)
+		
+		Set block = $ListFromString(pBlock,$Char(13,10)),
+			pre = $$$NO
+			
+		For k=1:1:$ListLength(block) {
+			Set value = $List(block,k)
 			
 			Set:($Find(value,"<pre>")||$Find(value,"<example>")) pre = $$$YES
 			Set:($Find(value,"</pre>")||$Find(value,"</example>")) pre = $$$NO
