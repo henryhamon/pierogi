@@ -92,9 +92,15 @@ ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %St
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-		Set pResults.Status = "exception",
-			tDescError = $System.Status.GetErrorText(tSC)
-		Do pResults.Failures.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError))
+		
+		Set pResults.Status = "fail",
+			tDescError = $System.Status.GetErrorText(tSC), 
+			pResults.Fail = pResults.Fail + 1,
+			failure = ##class(Pierogi.Failures).%New(pClass, pMethod) 
+			
+		Do failure.Asserts.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError)),
+			pResults.Failures.Insert(failure)
+			
 		// If got an error, report it and keep going
 		Set tSC = $$$OK
 	}
