@@ -9,7 +9,6 @@ Property Asserts As list Of Pierogi.Assert;
 
 Method %OnNew(pClassName As %String = "", pSpecTest As %String = "", pFailAsserts As %ListOfObjects = "") As %Status [ Private, ServerOnly = 1 ]
 {
-	
 	Set tSC = $$$OK
 	Try {
 		Set:pClassName'="" ..ClassName = pClassName

@@ -1,12 +1,16 @@
-Class Pierogi.DocTest
+Class Pierogi.DocTest Extends %RegisteredObject
 {
 
-ClassMethod Run(pProjectPackage As %String, ByRef pResults As Pierogi.Results = "") As %Status
+Property ProjectPackage As %String;
+
+Property Terminal As %Boolean [ InitialExpression = 0 ];
+
+Method Run(ByRef pResults As Pierogi.Results = "") As %Status
 {
 	Set tSC = $$$OK
 	Set:pResults="" pResults = ##class(Pierogi.Results).%New()
 	Try {
-		Set:pProjectPackage="" tSC = $$$ERROR(5002,"Project Package missing")
+		Set:..ProjectPackage="" tSC = $$$ERROR(5002,"Project Package missing")
 		Throw:$$$ISERR(tSC)
 		
 		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
@@ -17,19 +21,18 @@ ClassMethod Run(pProjectPackage As %String, ByRef pResults As Pierogi.Results = 
 			" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
 		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
-		Set tRS = tStatement.execute(pProjectPackage)
+		Set tRS = tStatement.execute(..ProjectPackage)
 		
 		While tRS.%Next() {
 			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block"), .pResults ))
 		}
-		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
 }
 
-ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
+Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
 {
 	Set tSC = $$$OK
 	Try {
@@ -88,8 +91,12 @@ ClassMethod ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %St
 			Set pResults.Status = "fail"
 			Set pResults.Fail = pResults.Fail + 1
 			$$$THROWONERROR(tSC, pResults.Failures.Insert(##class(Pierogi.Failures).%New(pClass, pMethod, failures)))
+			
+			Do:..Terminal=$$$YES ##class(Pierogi.TerminalDisplay).Fail()
 		} Else {
 			Set pResults.Pass = pResults.Pass + 1
+			Do:..Terminal=$$$YES ##class(Pierogi.TerminalDisplay).Pass()
+
 		}
 		
 	} Catch tException {
@@ -129,6 +136,13 @@ ClassMethod GetCodeBlock(pBlock As %String, Output pCodeBlock) As %Status [ Priv
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
+}
+
+Method %OnNew(pProjectPackage As %String = "", pTerminalDisplay As %Boolean = "") As %Status [ Private, ServerOnly = 1 ]
+{
+	Set:pProjectPackage'="" ..ProjectPackage = pProjectPackage
+	Set:pTerminalDisplay'="" ..Terminal = pTerminalDisplay
+	Quit $$$OK
 }
 
 }
