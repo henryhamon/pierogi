@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-16 16:12:16">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-22 07:46:25">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
-<TimeChanged>64330,58057.944261</TimeChanged>
+<TimeChanged>64335,31796.307642</TimeChanged>
 <TimeCreated>64322,62300.698768</TimeCreated>
 
 <Property name="Number">
@@ -29,11 +29,14 @@ The Expectation message when it fails</Description>
 <Type>%String</Type>
 </Property>
 
-<Property name="Expectation">
-<Description>
-The Expectation that this Assert belongs</Description>
-<Type>%String</Type>
-</Property>
+<UDLText name="T">
+<Content><![CDATA[
+/*
+/// The Expectation that this Assert belongs
+Property Expectation As %String;
+//*/
+]]></Content>
+</UDLText>
 
 <Method name="%OnNew">
 <FormalSpec>pLastNumber:%Integer=0</FormalSpec>
@@ -43,6 +46,20 @@ The Expectation that this Assert belongs</Description>
 <Implementation><![CDATA[
 	Set ..Number = $Increment(pLastNumber)
 	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="Satisfy">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pLastNumber:%Integer=0,pName:%String,pResult:%Boolean=0,pMessage:%String=""</FormalSpec>
+<ReturnType>Pierogi.Assert</ReturnType>
+<Implementation><![CDATA[
+	Set tAssert = ##class(Pierogi.Assert).%New( pLastNumber ), 
+		tAssert.Ok = pResult, 
+		tAssert.Name = pName
+	Set:((tAssert.Ok=$$$NO) && (pMessage'="")) tAssert.Msg = pMessage
+	
+	Quit tAssert
 ]]></Implementation>
 </Method>
 
@@ -79,7 +96,7 @@ The Expectation that this Assert belongs</Description>
 
 <Class name="Pierogi.Assertions">
 <Abstract>1</Abstract>
-<TimeChanged>64329,39388.296121</TimeChanged>
+<TimeChanged>64335,31846.763609</TimeChanged>
 <TimeCreated>64323,54295.847656</TimeCreated>
 
 <Property name="Status">
@@ -144,7 +161,6 @@ Assert that status is Not OK</Description>
 <Method name="Message">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pExpected="",pGot="",pBR=""</FormalSpec>
-<Private>1</Private>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
 	Set:pBR="" pBR = " "
@@ -153,17 +169,12 @@ Assert that status is Not OK</Description>
 </Method>
 
 <Method name="Test">
-<FormalSpec>pName:%String,pResult:%Boolean=0,pMessage:%String</FormalSpec>
+<FormalSpec>pName:%String,pResult:%Boolean=0,pMessage:%String=""</FormalSpec>
 <Private>1</Private>
 <ReturnType>Pierogi.Assert</ReturnType>
 <Implementation><![CDATA[
-	Set tAssert = ##class(Pierogi.Assert).%New( ..Results.Count() ), 
-		tAssert.Ok = pResult, 
-		tAssert.Name = pName
-	If tAssert.Ok=$$$NO {
-		Set tAssert.Msg = pMessage,
-			..Status = "fail"
-	}
+	Set tAssert = ##class(Pierogi.Assert).Satisfy( ..Results.Count(), pName, pResult, pMessage )
+	Set:tAssert.Ok=$$$NO ..Status = "fail"
 	
 	Quit tAssert
 ]]></Implementation>
@@ -197,19 +208,28 @@ Assert that status is Not OK</Description>
 
 
 <Class name="Pierogi.DocTest">
-<TimeChanged>64329,56900.846668</TimeChanged>
+<Super>%RegisteredObject</Super>
+<TimeChanged>64335,61158.153377</TimeChanged>
 <TimeCreated>64328,36995.575722</TimeCreated>
 
-<Property name="Project">
+<Property name="ProjectPackage">
 <Type>%String</Type>
 </Property>
 
-<Method name="GetDocCodes">
-<Internal>1</Internal>
+<Property name="Terminal">
+<Type>%Boolean</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Method name="Run">
+<FormalSpec><![CDATA[&pResults:Pierogi.Results=""]]></FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	Set tSC = $$$OK
+	Set:pResults="" pResults = ##class(Pierogi.Results).%New()
 	Try {
+		Set:..ProjectPackage="" tSC = $$$ERROR(5002,"Project Package missing")
+		Throw:$$$ISERR(tSC)
 		
 		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
 			" FROM %Dictionary.MethodDefinition "_
@@ -219,12 +239,11 @@ Assert that status is Not OK</Description>
 			" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
 		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
-		Set tRS = tStatement.execute(..Project)
+		Set tRS = tStatement.execute(..ProjectPackage)
 		
 		While tRS.%Next() {
-			$$$THROWONERROR(tSC, ..Parser(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block") ))
+			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block"), .pResults ))
 		}
-		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
@@ -232,17 +251,129 @@ Assert that status is Not OK</Description>
 ]]></Implementation>
 </Method>
 
-<Method name="Parser">
+<Method name="ParseAndExecute">
 <Internal>1</Internal>
-<FormalSpec>pClass:%String,pMethod:%String,pBlock:%String</FormalSpec>
+<FormalSpec><![CDATA[pClass:%String,pMethod:%String,pBlock:%String,&pResults:Pierogi.Results]]></FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	Set tSC = $$$OK
 	Try {
+		Set asserts = ##class(%ListOfObjects).%New(), 
+			failures = ##class(%ListOfObjects).%New(),
+			bFail = $$$NO
+		$$$THROWONERROR(tSC, ..GetCodeBlock(pBlock, .Code))
+		
+		For k=1:1:$ListLength(Code){
+			Set value = $List(Code,k)
+			If (($Find(value,">> ")) || ('$Find(value,"; "))){
+				Set value = $Replace(value,">> ","")
+				
+				// Do
+				Set action = $FIND($ZConvert(value,"U"),"DO ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"D ",0)
+				If action>0 {
+					Set action = $Extract(value,action,*)
+					Do @action
+				}
+				
+				// Set
+				Set action = $FIND($ZConvert(value,"U"),"SET ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"S ",0)
+				If action>0 {
+					Set action = $Extract(value,action,*)
+					Set @action
+				}
+				
+				// Write
+				Set action = $FIND($ZConvert(value,"U"),"WRITE ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"W ",0)
+				If action>0 {
+					Set action = "InternalDocTest2 = " _ $Extract(value,action,*)
+					Set @action
+					Set action = "InternalDocTest2"
+					Set InternalDocTest = @action
+					
+					Set tResult =$Replace($Replace($List(Code,k+1),$Char(9),""),"; ",""), 
+						tExpect = $Get(InternalDocTest)
+					Set tMessage = ##class(Pierogi.Assertions).Message(tExpect, tResult)
+					
+					Set assert = ##class(Pierogi.Assert).Satisfy(asserts.Count(), "", tExpect = tResult, tMessage)
+					$$$THROWONERROR(tSC, asserts.Insert(assert))
+					If assert.Ok=$$$NO {
+						Set bFail=$$$YES
+						$$$THROWONERROR(tSC, failures.Insert(assert))
+					}
+					
+					Kill InternalDocTest, InternalDocTest2
+				}
+			}
+		}
+			
+		If bFail {
+			Set pResults.Fail = pResults.Fail + 1
+			$$$THROWONERROR(tSC, pResults.Failures.Insert(##class(Pierogi.Failures).%New(pClass, pMethod, failures)))
+			
+			Do:..Terminal=$$$YES ##class(Pierogi.TerminalDisplay).Fail()
+		} Else {
+			Set pResults.Pass = pResults.Pass + 1
+			Do:..Terminal=$$$YES ##class(Pierogi.TerminalDisplay).Pass()
+
+		}
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		
+		Set pResults.Status = tSC,
+			tDescError = $System.Status.GetErrorText(tSC), 
+			pResults.Fail = pResults.Fail + 1,
+			failure = ##class(Pierogi.Failures).%New(pClass, pMethod) 
+			
+		Do failure.Asserts.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError)),
+			pResults.Failures.Insert(failure)
+			
+		// If got an error, report it and keep going
+		Set tSC = $$$OK
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="GetCodeBlock">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pBlock:%String,*pCodeBlock</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, pCodeBlock = ""
+	Try {
+		
+		Set block = $ListFromString(pBlock,$Char(13,10)),
+			pre = $$$NO
+			
+		For k=1:1:$ListLength(block) {
+			Set value = $List(block,k)
+			
+			Set:($Find(value,"<pre>")||$Find(value,"<example>")) pre = $$$YES
+			Set:($Find(value,"</pre>")||$Find(value,"</example>")) pre = $$$NO
+			
+			Set:pre=$$$YES $List(pCodeBlock, *+1) = value
+		}
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
 	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="%OnNew">
+<FormalSpec>pProjectPackage:%String="",pTerminalDisplay:%Boolean=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set:pProjectPackage'="" ..ProjectPackage = pProjectPackage
+	Set:pTerminalDisplay'="" ..Terminal = pTerminalDisplay
+	Quit $$$OK
 ]]></Implementation>
 </Method>
 </Class>
@@ -360,11 +491,73 @@ Assert that status is Not OK</Description>
 </Class>
 
 
+<Class name="Pierogi.Failures">
+<Super>%SerialObject</Super>
+<TimeChanged>64335,57930.872713</TimeChanged>
+<TimeCreated>64334,31349.624115</TimeCreated>
+
+<Property name="ClassName">
+<Type>%String</Type>
+</Property>
+
+<Property name="SpecTest">
+<Type>%String</Type>
+</Property>
+
+<Property name="Asserts">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
+<Method name="%OnNew">
+<FormalSpec>pClassName:%String="",pSpecTest:%String="",pFailAsserts:%ListOfObjects=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set:pClassName'="" ..ClassName = pClassName
+		Set:pSpecTest'="" ..SpecTest = pSpecTest
+		If $IsObject(pFailAsserts) {
+			For k=1:1:pFailAsserts.Count() {
+				Set assertFail = pFailAsserts.GetAt(k)
+				$$$THROWONERROR(tSC, ..Asserts.Insert(assertFail))
+			}
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>FailuresState</State>
+<StreamLocation>^Pierogi.FailuresS</StreamLocation>
+<Data name="FailuresState">
+<Value name="1">
+<Value>ClassName</Value>
+</Value>
+<Value name="2">
+<Value>SpecTest</Value>
+</Value>
+<Value name="3">
+<Value>Asserts</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
 
 
 <Class name="Pierogi.Results">
+<Description>
+Memento Class</Description>
 <Super>%SerialObject</Super>
-<TimeChanged>64329,62282.039185</TimeChanged>
+<TimeChanged>64335,49745.086712</TimeChanged>
 <TimeCreated>64324,54759.739853</TimeCreated>
 
 <Property name="Pass">
@@ -377,8 +570,9 @@ Assert that status is Not OK</Description>
 <InitialExpression>0</InitialExpression>
 </Property>
 
-<Property name="All">
-<Type>%ArrayOfDataTypes</Type>
+<Property name="Failures">
+<Type>Pierogi.Failures</Type>
+<Collection>list</Collection>
 </Property>
 
 <Property name="Status">
@@ -392,13 +586,18 @@ Assert that status is Not OK</Description>
 </Method>
 
 <Method name="Add">
-<FormalSpec>pStatus:%String</FormalSpec>
+<FormalSpec>pClass,pSpec:%String=""</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	Set tSC = $$$OK
 	Try {
-		Set:pStatus="fail" ..Fail = ..Fail + 1
-		Set:pStatus="succeed" ..Pass = ..Pass + 1
+		Set:pClass.Status="succeed" ..Pass = ..Pass + 1
+		If pClass.Status="fail" {
+			Set ..Fail = ..Fail + 1
+			Set failure = ##class(Pierogi.Failures).%New($ClassName(pClass), pSpec, pClass.Fails)
+			
+			$$$THROWONERROR(tSC, ..Failures.Insert(failure))
+		}
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
@@ -425,6 +624,9 @@ Assert that status is Not OK</Description>
 </Value>
 <Value name="5">
 <Value>Status</Value>
+</Value>
+<Value name="6">
+<Value>Failures</Value>
 </Value>
 </Data>
 </Storage>
@@ -472,7 +674,7 @@ Assert that status is Not OK</Description>
 <Class name="Pierogi.Suite">
 <Abstract>1</Abstract>
 <Super>%RegisteredObject</Super>
-<TimeChanged>64329,31719.854195</TimeChanged>
+<TimeChanged>64335,61058.527392</TimeChanged>
 <TimeCreated>64322,58801.760167</TimeCreated>
 
 <Parameter name="Terminal">
@@ -589,6 +791,9 @@ from the <method>Package</method> class method.]]></Description>
 		Set tResults.Status = $$$OK
 		Do ##class(Pierogi.TerminalDisplay).Cls()
 		
+		// Run DocTest
+		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
+		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
 			
@@ -613,7 +818,6 @@ from the <method>Package</method> class method.]]></Description>
 <Implementation><![CDATA[
 	Set tSC = $$$OK
 	Try {
-		
 		// LifeCycleHooks
 		Do pClass.BeforeSetup()
 		// For Each Test
@@ -624,12 +828,10 @@ from the <method>Package</method> class method.]]></Description>
 			
 			$$$THROWONERROR(tSC, pClass.Results.Clear())
 			Do $Method(pClass, test)
-			$$$THROWONERROR(tSC, pResults.Add(pClass.Status))
+			$$$THROWONERROR(tSC, pResults.Add(pClass, test))
 			
 			Do:(pClass.Status="fail" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Fail()
-			 
 			Do:(pClass.Status="succeed" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Pass()
-			
 			
 			Do pClass.After()
 		}
@@ -653,13 +855,25 @@ from the <method>Package</method> class method.]]></Description>
 		Set class = $ClassMethod(pClass,"%New")
 		#Dim class As Pierogi.Spec
 		$$$THROWONERROR(tSC, ..RunnableMethods(pClass, .specs))
-		
-		If ..#Terminal=$$$YES {
-			Do ##class(Pierogi.TerminalDisplay).Class(pClass)
-		}
-		
 		$$$THROWONERROR(tSC, ..LifecycleHooks(class, specs, .pResults))
-	
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="RunDocTests">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&pResults:Pierogi.Results]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Quit:..ProjectPackage()="" tSC
+	Try {
+		Set DocTest = ##class(Pierogi.DocTest).%New(..ProjectPackage(), ..#Terminal)
+		$$$THROWONERROR(tSC, DocTest.Run(.pResults))
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
@@ -708,10 +922,20 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.DocTest">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64329,31017.389388</TimeChanged>
+<TimeChanged>64335,61288.275187</TimeChanged>
 <TimeCreated>64328,36695.631547</TimeCreated>
 
 <Method name="TestRun">
+<Implementation><![CDATA[
+	Set docTest = ##class(Pierogi.DocTest).%New( ##class(SampleTest.Suite).ProjectPackage(), 0)
+	Do ..ItShouldBeOk(docTest.Run( .tResults))
+	
+	#Dim tResults As Pierogi.Results
+	Do ..ItShouldNotBeOk(tResults.Status)
+	Do ..ItShouldBeEqual(tResults.Tests(), 5)
+	Do ..ItShouldBeEqual(tResults.Pass, 3)
+	Do ..ItShouldBeEqual(tResults.Fail, 2)
+]]></Implementation>
 </Method>
 </Class>
 
@@ -989,7 +1213,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Helper">
 <Super>%UnitTest.TestCase</Super>
-<TimeChanged>64322,53332.127673</TimeChanged>
+<TimeChanged>64335,61277.119667</TimeChanged>
 <TimeCreated>64322,53251.436969</TimeCreated>
 
 <UDLText name="T">
@@ -1028,12 +1252,21 @@ from the <method>Package</method> class method.]]></Description>
 	Do $$$AssertStatusOK(pStatus, "[Expected]: OK [Got]: "_$Get(descerr))
 ]]></Implementation>
 </Method>
+
+<Method name="ItShouldNotBeOk">
+<FormalSpec>pStatus</FormalSpec>
+<Implementation><![CDATA[
+	Set descerr = "OK"
+	Set:$$$ISERR(pStatus) descerr = $System.Status.GetErrorText(pStatus)
+	Do $$$AssertStatusNotOK(pStatus, "[Expected]: ERR [Got]: "_$Get(descerr))
+]]></Implementation>
+</Method>
 </Class>
 
 
 <Class name="PierogiTests.Pierogi.Suite">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64329,31618.005804</TimeChanged>
+<TimeChanged>64335,60207.540648</TimeChanged>
 <TimeCreated>64324,30757.305069</TimeCreated>
 
 <Method name="TestPackageName">
@@ -1072,9 +1305,12 @@ from the <method>Package</method> class method.]]></Description>
 	
 	Set results = ##class(SampleTest.Suite).Run()
 	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
-	Do ..ItShouldBeEqual(results.Tests(),2)
-	Do ..ItShouldBeEqual(results.Pass,1)
-	Do ..ItShouldBeEqual(results.Fail,1)
+	Do ..ItShouldBeEqual(results.Tests(),7)
+	Do ..ItShouldBeEqual(results.Pass,4)
+	Do ..ItShouldBeEqual(results.Fail,3)
+	Do ..ItShouldBeEqual(results.Failures.Count(),3)
+	Do ..ItShouldBeEqual(results.Failures.GetAt(1).ClassName,"SamplePrj.PierogiDelivery.Ope.Calculator")
+	Do ..ItShouldBeEqual(results.Failures.GetAt(1).SpecTest,"Multiply")
 ]]></Implementation>
 </Method>
 </Class>
@@ -1146,7 +1382,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64329,40102.339289</TimeChanged>
+<TimeChanged>64335,61291.689615</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -1194,7 +1430,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>10.0000%</Selectivity>
+<Selectivity>12.5000%</Selectivity>
 </Property>
 <Property name="Name">
 <Selectivity>10.0000%</Selectivity>
@@ -1591,7 +1827,7 @@ Write flavor.Price
 
 
 <Class name="SamplePrj.PierogiDelivery.Ope.Calculator">
-<TimeChanged>64330,58235.234857</TimeChanged>
+<TimeChanged>64335,57173.044023</TimeChanged>
 <TimeCreated>64330,33772.402014</TimeCreated>
 
 <Method name="Add">
@@ -1629,13 +1865,28 @@ This example should be fail...
 <example>
 S FirstNumber = 1
 Set SecondNumber = 10
-Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator)Multiply(FirstNumber, SecondNumber)
+Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator).Multiply(FirstNumber, SecondNumber)
 ; 10
 </example>]]></Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pN1,pN2</FormalSpec>
 <ReturnType>%Integer</ReturnType>
 <Implementation><![CDATA[	Q pN1 + pN2
+]]></Implementation>
+</Method>
+
+<Method name="Exception">
+<Description><![CDATA[
+This example should generate an Exception,<br>
+because the method is calling without "." (dot) <br>
+On Example code:
+<example>
+Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator)Exception(FirstNumber, SecondNumber)
+; 10
+</example>]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	Quit $$$ERROR(5002,"Exception")
 ]]></Implementation>
 </Method>
 </Class>
@@ -2245,7 +2496,7 @@ Write ##class(SamplePrj.PierogiDelivery.Ope.Calculator)Multiply(FirstNumber, Sec
 
 <Class name="SamplePrj.PierogiDelivery.Production.System">
 <Super>Ens.Production</Super>
-<TimeChanged>64321,59700.74933</TimeChanged>
+<TimeChanged>64334,49317.338722</TimeChanged>
 <TimeCreated>64317,55694.9316</TimeCreated>
 
 <XData name="ProductionDefinition">
@@ -3939,7 +4190,7 @@ Male Gender = 1</Description>
 
 
 
-<Project name="pierogi_system" LastModified="2017-02-16 16:11:48.982981">
+<Project name="pierogi_system" LastModified="2017-02-22 07:46:17.783501">
   <Items>
     <ProjectItem name="Pierogi" type="PKG"></ProjectItem>
     <ProjectItem name="PierogiTests" type="PKG"></ProjectItem>
