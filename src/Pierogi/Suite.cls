@@ -101,6 +101,7 @@ ClassMethod Run() As Pierogi.Results
 		
 		Set zhmDuration=$zh-zhmBegin
 		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(zhmDuration)
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()

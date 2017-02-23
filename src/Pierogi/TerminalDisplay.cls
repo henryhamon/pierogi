@@ -3,7 +3,7 @@ Class Pierogi.TerminalDisplay
 
 ClassMethod Cls()
 {
-	Write #,!,"Baking Pierogies and Running Tests",!,*12
+	Write #,!,?2,"Baking Pierogies and Running Tests",!,*12,?4
 }
 
 ClassMethod Class(pClassName As %String)
@@ -18,17 +18,25 @@ ClassMethod Pass()
 
 ClassMethod Fail()
 {
-	WRITE *7 // Ring the Bell
 	Write *27,"[31m","F",*27,"[0m"
 }
 
-ClassMethod Resume()
+ClassMethod Resume(pResults As Pierogi.Results)
 {
+	Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
+	Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
+	If pResults.Fail > 0 {
+		Write *7 // Ring the Bell
+		Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
+	} Else {
+		Write !,?2,*27,"[32m","Pass!",	*27,"[0m"
+	}
+	Write !
 }
 
 ClassMethod FinishedIn(pDuration)
 {
-	Write !!,*27,"[0m","Finished in ",pDuration," seconds",*27,"[0m",!
+	Write !!,?2,*27,"[0m","Finished in ",pDuration," seconds",*27,"[0m",!
 }
 
 }
