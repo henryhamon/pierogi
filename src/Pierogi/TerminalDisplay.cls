@@ -64,7 +64,12 @@ ClassMethod WellDone()
 	Set $List(quote, *+1)= " I always knew you that you have what it takes to be a real winner. "_$Char(10,13)_
 							"  Thanks for a great job."
 	Set $List(quote, *+1)= " Don't stop when you are tired. Stop when you are done!"
-	
+	Set $List(quote, *+1)= " I always knew you that you have what it takes to be a real winner. "_$Char(10,13)_
+							"  Thanks for a great job."
+	Set $List(quote, *+1)= " I knew the rest of our journey would be great success. "_$Char(10,13)_
+							"  -Borat Sagdiyev"
+	Set $List(quote, *+1)= " Great success! "
+	 
 	Quit $List(quote,$Random($ListLength(quote))+1)
 }
 
@@ -95,6 +100,8 @@ ClassMethod KeepingDoing()
 							"  -Barbara Broccoli"
 	Set $List(quote, *+1)= " Never, never, never give up. "_$Char(10,13)_
 							"  -Winston Churchill"
+	Set $List(quote, *+1)= " Ha ha! "_$Char(10,13)_
+							"  -Nelson Muntz"
 	
 	Quit $List(quote,$Random($ListLength(quote))+1)
 }
