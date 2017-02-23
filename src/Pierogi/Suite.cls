@@ -83,7 +83,9 @@ ClassMethod Run() As Pierogi.Results
 {
 	Set tResults = ##class(Pierogi.Results).%New()
 	Try {
-		Set tResults.Status = $$$OK
+		Set zhmBegin=$zh, 
+			tResults.Status = $$$OK
+			
 		Do ##class(Pierogi.TerminalDisplay).Cls()
 		
 		// Run DocTest
@@ -96,6 +98,9 @@ ClassMethod Run() As Pierogi.Results
 			
 			Set idx = $Increment(idx)
 		}
+		
+		Set zhmDuration=$zh-zhmBegin
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(zhmDuration)
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
