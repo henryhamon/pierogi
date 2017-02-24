@@ -28,11 +28,45 @@ ClassMethod Resume(pResults As Pierogi.Results)
 	If pResults.Fail > 0 {
 		Write *7 // Ring the Bell
 		Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
-		Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m"
+		// Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m",!
+		Do ..ShowFailures(pResults)
 	} Else {
 		Write !,?2,*27,"[32m","Pass!", ..WellDone(),	*27,"[0m"
 	}
 	Write !
+}
+
+ClassMethod ShowFailures(pResults As Pierogi.Results)
+{
+	Set red = "[31m"
+	Write !,?1,"=>",*27,"[33m", " Failed Tests: ",	*27,"[0m"
+	Write *27,"[0m"," There were ",	*27,"[0m"
+	Write *27,red, pResults.Failures.Count(),*27,"[0m"
+	Write *27,"[0m"," failures.",*27,"[0m",!
+	
+	S lastClass = ""
+	
+	While pResults.Failures.GetNext(.key) {
+		Set failure = pResults.Failures.GetAt(key)
+		#Dim failure as Pierogi.Failures
+		
+		If lastClass '= failure.ClassName {
+			Set lastClass = failure.ClassName
+			Write !!,?1,lastClass
+		}
+		
+		Write !,?3,key,") ",failure.Describe()
+		
+		While failure.Asserts.GetNext(.assert) {
+			If failure.Asserts.GetAt(assert).Name'="" {
+				Set assertDesc = "["_failure.Asserts.GetAt(assert).Number _"] "_
+					failure.Asserts.GetAt(assert).Msg
+			} Else {
+				Set assertDesc = failure.Asserts.GetAt(assert).Msg
+			}
+			Write:assertDesc'="" !,?6,*27,red,assertDesc,	*27,"[0m"
+		}
+	}
 }
 
 ClassMethod FinishedIn(pDuration)
@@ -104,6 +138,16 @@ ClassMethod KeepingDoing()
 							"  -Nelson Muntz"
 	
 	Quit $List(quote,$Random($ListLength(quote))+1)
+}
+
+ClassMethod FailColor() [ Private ]
+{
+	Quit "[31m"
+}
+
+ClassMethod PassColor() [ Private ]
+{
+	Quit "[31m"
 }
 
 }

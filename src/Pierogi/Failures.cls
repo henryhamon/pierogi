@@ -7,6 +7,27 @@ Property SpecTest As %String;
 
 Property Asserts As list Of Pierogi.Assert;
 
+Method Describe() As %String
+{
+	Set matcher = ##class(%Regex.Matcher).%New("(?<!^)(?=[A-Z])")
+	Set matcher.Text = ..SpecTest
+	Set $List(extract, *+1) = 1
+	While matcher.Locate() {
+		Set $List(extract, *+1) = matcher.Start
+    }
+    
+    If $ListLength(extract)>1 {
+	    For k=2:1:$ListLength(extract) {
+		    Set $List(describe, * +  1) = $Extract(..SpecTest, $List(extract, k-1), $List(extract, k)-1)
+		}
+	    Set $List(describe, * +  1) = $Extract(..SpecTest, $List(extract, k), *)
+    } Else {
+   		Set describe = $ListBuild(..SpecTest)
+    }
+	
+    Quit $ListToString(describe, " ")
+}
+
 Method %OnNew(pClassName As %String = "", pSpecTest As %String = "", pFailAsserts As %ListOfObjects = "") As %Status [ Private, ServerOnly = 1 ]
 {
 	Set tSC = $$$OK
