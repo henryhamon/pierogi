@@ -44,7 +44,7 @@ ClassMethod ShowFailures(pResults As Pierogi.Results)
 	Write *27,red, pResults.Failures.Count(),*27,"[0m"
 	Write *27,"[0m"," failures.",*27,"[0m",!
 	
-	S lastClass = ""
+	Set lastClass = ""
 	
 	While pResults.Failures.GetNext(.key) {
 		Set failure = pResults.Failures.GetAt(key)
@@ -93,6 +93,8 @@ ClassMethod WellDone()
 	Set $List(quote, *+1)= " May success follow you, each and every place you go. In the halo of prosperity, may you always glow. May you get everything, that you could ever ask for. Great times lie ahead for you, of that we are very sure. Well done."
 	Set $List(quote, *+1)= " One job well done can be redemption for many a mistake of the past."_$Char(10,13)_
 							"  Keep it up."
+	Set $List(quote, *+1)= " Just keep swimming. "_$Char(10,13)_
+							"  -Dori"
 	Set $List(quote, *+1)= " The tipping point between a boy and a man is a job well done. "_$Char(10,13)_
 							"  Congratulations."
 	Set $List(quote, *+1)= " I always knew you that you have what it takes to be a real winner. "_$Char(10,13)_
