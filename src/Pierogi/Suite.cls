@@ -20,9 +20,9 @@ ClassMethod Package() As %String [ Abstract ]
 	Quit ""
 }
 
-/// Abstract method that should return the name of the package 
+/// Optional method that should return the name of the package 
 /// where the project classes are located.
-ClassMethod ProjectPackage() As %String [ Abstract ]
+ClassMethod ProjectPackage() As %String
 {
 	Quit ""
 }
@@ -87,7 +87,7 @@ ClassMethod Run() As Pierogi.Results
 		Set zhmBegin=$zh, 
 			tResults.Status = $$$OK
 			
-		Do ##class(Pierogi.TerminalDisplay).Cls()
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
 		
 		// Run DocTest
 		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
@@ -102,12 +102,14 @@ ClassMethod Run() As Pierogi.Results
 		
 		Set zhmDuration=$zh-zhmBegin
 		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(zhmDuration)
-		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		Set tResults.Status = tSC
 	}
+	
+	Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
+
 	Quit tResults
 }
 
