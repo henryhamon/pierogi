@@ -81,7 +81,8 @@ ClassMethod RunnableMethods(pClassname As %String, Output pTests) As %Status
 
 ClassMethod Run() As Pierogi.Results
 {
-	Set tResults = ##class(Pierogi.Results).%New()
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
 	Try {
 		Set zhmBegin=$zh, 
 			tResults.Status = $$$OK
