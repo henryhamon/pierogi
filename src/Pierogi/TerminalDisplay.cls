@@ -23,15 +23,21 @@ ClassMethod Fail()
 
 ClassMethod Resume(pResults As Pierogi.Results)
 {
-	Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
-	Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
-	If pResults.Fail > 0 {
-		Write *7 // Ring the Bell
-		Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
-		// Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m",!
-		Do ..ShowFailures(pResults)
+	I $$$ISERR(pResults.Status) {
+		W !,?2,*27,..WarningColor(), "Ooops... ",	*27,"[0m",!
+		W !,?4, $System.Status.GetErrorText(pResults.Status),!!
 	} Else {
-		Write !,?2,*27,"[32m","Pass!", ..WellDone(),	*27,"[0m"
+	
+		Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
+		Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
+		If pResults.Fail > 0 {
+			Write *7 // Ring the Bell
+			Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
+			// Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m",!
+			Do ..ShowFailures(pResults)
+		} Else {
+			Write !!,?2,*27,"[32m","Pass!", ..WellDone(),	*27,"[0m"
+		}
 	}
 	Write !
 }
@@ -90,7 +96,11 @@ ClassMethod WellDone()
 	Set $List(quote, *+1)= " Doing anything with perfection is like wearing an impeccable suit "_$Char(10,13)_
 							"  ? the best way to make a great impression. "_$Char(10,13)_
 							"  Well done."
-	Set $List(quote, *+1)= " May success follow you, each and every place you go. In the halo of prosperity, may you always glow. May you get everything, that you could ever ask for. Great times lie ahead for you, of that we are very sure. Well done."
+	Set $List(quote, *+1)= " May success follow you, each and every place you go."_$Char(10,13)_
+							"   In the halo of prosperity, may you always glow."_$Char(10,13)_
+							"   May you get everything, that you could ever ask for."_$Char(10,13)_
+							"   Great times lie ahead for you, of that we are very sure."_$Char(10,13)_
+							"   Well done."
 	Set $List(quote, *+1)= " One job well done can be redemption for many a mistake of the past."_$Char(10,13)_
 							"  Keep it up."
 	Set $List(quote, *+1)= " Just keep swimming. "_$Char(10,13)_
@@ -150,6 +160,11 @@ ClassMethod FailColor() [ Private ]
 ClassMethod PassColor() [ Private ]
 {
 	Quit "[31m"
+}
+
+ClassMethod WarningColor() [ Private ]
+{
+	Quit "[33m"
 }
 
 }
