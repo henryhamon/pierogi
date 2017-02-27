@@ -125,7 +125,7 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 
 			Do pClass.Before()
 			
-			$$$THROWONERROR(tSC, pClass.Results.Clear())
+			$$$THROWONERROR(tSC, pClass.Clear())
 			Do $Method(pClass, test)
 			$$$THROWONERROR(tSC, pResults.Add(pClass, test))
 			

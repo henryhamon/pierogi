@@ -9,6 +9,21 @@ Property Fails As list Of Pierogi.Assert;
 
 Property Succeeds As list Of Pierogi.Assert;
 
+Method Clear() As %Status [ Internal ]
+{
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ..Results.Clear())
+		$$$THROWONERROR(tSC, ..Fails.Clear())
+		$$$THROWONERROR(tSC, ..Succeeds.Clear())
+		Set ..Status = "succeed"
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
 /// Assert that value is true.
 Method True(pValue As %Boolean)
 {
