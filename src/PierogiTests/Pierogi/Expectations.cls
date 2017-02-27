@@ -181,6 +181,30 @@ Method TestComparisons()
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
 }
 
+Method TestIsObject()
+{
+	Set expectation = ##class(Pierogi.Expectations).%New(), 
+		test = ##class(%ListOfObjects).%New()
+	
+	Do expectation.IsObject(test)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsObject(1)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.IsNotObject(1)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsNotObject(test)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+}
+
 Method TestResult()
 {
 }

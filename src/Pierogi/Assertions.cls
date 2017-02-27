@@ -138,6 +138,18 @@ Method IsAtMost(pValue, pNum)
 	Do ..SetResults(..Test("Is at Most", (pValue <= pNum),..Message("Is at Most " _ pNum, pValue)))
 }
 
+/// Asserts that value is an object
+Method IsObject(pValue)
+{
+	Do ..SetResults(..Test("Is Object", $IsObject(pValue),..Message("Is Object")))
+}
+
+/// Asserts that value is NOT an object
+Method IsNotObject(pValue)
+{
+	Do ..SetResults(..Test("Is Not Object", '$IsObject(pValue),..Message("Is not an Object")))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "
