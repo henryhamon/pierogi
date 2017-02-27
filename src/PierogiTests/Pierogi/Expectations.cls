@@ -77,6 +77,39 @@ Method TestAssertEqual()
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
+Method TestRange()
+{
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Within(25, 5, 50)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Within(2, 5, 50)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Approximately(3.49, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Approximately(2.5, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.CloseTo(3.49, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.CloseTo(2.5, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+}
+
 Method TestResult()
 {
 }

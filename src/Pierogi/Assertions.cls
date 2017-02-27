@@ -70,6 +70,32 @@ Method Exactly(pValue, pExpected)
 	Do ..SetResults(..Test("Exactly", pValue = pExpected,..Message(pExpected, pValue)))
 }
 
+/// Assert inclusive numeric range (<= to and >= from): <br/>
+/// <br/>
+/// Do ..Within(User.Age, 5, 50)
+Method Within(pValue, pMin, pMax)
+{
+	Do ..SetResults(..Test("Within", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
+}
+
+/// Assert floating point number near num within a +/- delta range.
+/// <br/>
+/// Do ..Approximately(3.49, 3.5, 0.01 )
+Method Approximately(pValue As %Numeric, pExpected As %Numeric, pDelta As %Numeric = 0.01)
+{
+	Do ..CloseTo(pValue, pExpected, pDelta)
+}
+
+/// Asserts that the target is equal expected, to within a +/- delta range.
+/// <br/>
+/// Do ..CloseTo(1.5, 1, 0.5)
+Method CloseTo(pValue As %Numeric, pExpected As %Numeric, pDelta As %Numeric = 0.5)
+{
+	Set pMin = (pExpected - pDelta), 
+		pMax = (pExpected + pDelta)
+	Do ..SetResults(..Test("Close To", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "

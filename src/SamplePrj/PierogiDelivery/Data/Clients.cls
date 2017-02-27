@@ -33,7 +33,7 @@ Relationship Orderes As SamplePrj.PierogiDelivery.Data.Order [ Cardinality = chi
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>11.1111%</Selectivity>
+<Selectivity>10.0000%</Selectivity>
 </Property>
 <Property name="Name">
 <Selectivity>10.0000%</Selectivity>
