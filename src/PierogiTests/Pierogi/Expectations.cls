@@ -110,6 +110,77 @@ Method TestRange()
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
+Method TestComparisons()
+{
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Above(50, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Above(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.GreaterThan(50, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.GreaterThan(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.IsAtLeast(25, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsAtLeast(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Do expectation.IsAtLeast(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),3)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Below(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Below(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.LessThan(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.LessThan(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.IsAtMost(25, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsAtMost(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Do expectation.IsAtMost(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),3)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
+}
+
 Method TestResult()
 {
 }

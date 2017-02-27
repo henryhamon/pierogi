@@ -96,6 +96,48 @@ Method CloseTo(pValue As %Numeric, pExpected As %Numeric, pDelta As %Numeric = 0
 	Do ..SetResults(..Test("Close To", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
 }
 
+/// Above(num) and GreaterThan(num)<br/>
+/// Assert numeric value above the given value (> num): <br/>
+/// Do ..Above(User.Age, 5)
+Method Above(pValue, pNum)
+{
+	Do ..SetResults(..Test("Above", (pValue > pNum),..Message(pNum_" < ", pValue)))
+}
+
+/// Assert numeric value above the given value (> num):<br/>
+/// Do ..GreaterThan(User.Age, 5)
+Method GreaterThan(pValue, pNum)
+{
+	Do ..SetResults(..Test("Greater Than", (pValue > pNum),..Message("Greater than "_pNum, pValue)))
+}
+
+/// Assert is greater than or equal to (>=) valueToBeAtLeast(num)
+Method IsAtLeast(pValue, pNum)
+{
+	Do ..SetResults(..Test("Is at Least", (pValue >= pNum),..Message("Is at Least " _ pNum, pValue)))
+}
+
+/// Below(num) and LessThan(num)<br/>
+/// Assert numeric value below the given value (< num)<br/>
+/// Do ..Below(User.Age, 50)
+Method Below(pValue, pNum)
+{
+	Do ..SetResults(..Test("Below", (pValue < pNum),..Message(pNum_" > ", pValue)))
+}
+
+/// Assert numeric value below the given value (< num)<br/>
+/// Do ..LessThan(User.Age, 50)
+Method LessThan(pValue, pNum)
+{
+	Do ..SetResults(..Test("Less Than", (pValue < pNum),..Message("Less than "_pNum, pValue)))
+}
+
+/// Assert is less than or equal to (<=) valueToBeAtMost (num)
+Method IsAtMost(pValue, pNum)
+{
+	Do ..SetResults(..Test("Is at Most", (pValue <= pNum),..Message("Is at Most " _ pNum, pValue)))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "
