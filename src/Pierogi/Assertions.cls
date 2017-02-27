@@ -101,7 +101,7 @@ Method CloseTo(pValue As %Numeric, pExpected As %Numeric, pDelta As %Numeric = 0
 /// Do ..Above(User.Age, 5)
 Method Above(pValue, pNum)
 {
-	Do ..SetResults(..Test("Above", (pValue > pNum),..Message(pNum_" < ", pValue)))
+	Do ..SetResults(..Test("Above", (pValue > pNum),..Message("Above " _ pNum, pValue)))
 }
 
 /// Assert numeric value above the given value (> num):<br/>
