@@ -150,6 +150,15 @@ Method IsNotObject(pValue)
 	Do ..SetResults(..Test("Is Not Object", '$IsObject(pValue),..Message("Is not an Object")))
 }
 
+/// Asserts that value?s type is pClassName
+/// <br/>
+/// Do ..TypeOf(pClass, "%RegisteredObject" )
+Method TypeOf(pValue, pClassName)
+{
+	Set got = $ClassName(pValue)
+	Do ..SetResults(..Test("Is Not Object", got = pClassName,..Message(pClassName, got)))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "

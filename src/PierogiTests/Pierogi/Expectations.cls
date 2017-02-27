@@ -203,6 +203,17 @@ Method TestIsObject()
 	Do expectation.IsNotObject(test)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New(), 
+		test2 = ##class(%ArrayOfDataTypes).%New()
+	
+	Do expectation.TypeOf(test,"%Library.ListOfObjects")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.TypeOf(test2,"%Library.ListOfObjects")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
 Method TestResult()
