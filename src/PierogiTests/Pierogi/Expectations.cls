@@ -63,6 +63,20 @@ Method TestStatusNotOk()
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
+Method TestAssertEqual()
+{
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Equal(1,1)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	
+	Do expectation.Equal(1,2)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+}
+
 Method TestResult()
 {
 }

@@ -52,6 +52,24 @@ Method NotOk(pValue)
 	Do ..SetResults(..Test("NotOk", $$$ISERR(pValue), ..Message(st, actual)))
 }
 
+/// Assert Should Be Equal
+Method Equal(pValue, pExpected)
+{
+	Do ..SetResults(..Test("Equal", pValue = pExpected,..Message(pExpected, pValue)))
+}
+
+/// Assert Should Be Equal
+Method Eql(pValue, pExpected)
+{
+	Do ..Equal(pValue, pExpected)
+}
+
+/// Assert Should Be Exact the same
+Method Exactly(pValue, pExpected)
+{
+	Do ..SetResults(..Test("Exactly", pValue = pExpected,..Message(pExpected, pValue)))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "
