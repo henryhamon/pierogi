@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-24 13:49:22">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-27 17:29:50">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64335,31796.307642</TimeChanged>
@@ -96,7 +96,7 @@ Property Expectation As %String;
 
 <Class name="Pierogi.Assertions">
 <Abstract>1</Abstract>
-<TimeChanged>64335,31846.763609</TimeChanged>
+<TimeChanged>64341,62690.623915</TimeChanged>
 <TimeCreated>64323,54295.847656</TimeCreated>
 
 <Property name="Status">
@@ -119,6 +119,24 @@ Property Expectation As %String;
 <Type>Pierogi.Assert</Type>
 <Collection>list</Collection>
 </Property>
+
+<Method name="Clear">
+<Internal>1</Internal>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ..Results.Clear())
+		$$$THROWONERROR(tSC, ..Fails.Clear())
+		$$$THROWONERROR(tSC, ..Succeeds.Clear())
+		Set ..Status = "succeed"
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
 
 <Method name="True">
 <Description>
@@ -155,6 +173,145 @@ Assert that status is Not OK</Description>
 	Set st="Status Not OK", actual = st
 	Set:$$$ISOK(pValue) actual = "Status OK"
 	Do ..SetResults(..Test("NotOk", $$$ISERR(pValue), ..Message(st, actual)))
+]]></Implementation>
+</Method>
+
+<Method name="Equal">
+<Description>
+Assert Should Be Equal</Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Equal", pValue = pExpected,..Message(pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Eql">
+<Description>
+Assert Should Be Equal</Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..Equal(pValue, pExpected)
+]]></Implementation>
+</Method>
+
+<Method name="Exactly">
+<Description>
+Assert Should Be Exact the same</Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Exactly", pValue = pExpected,..Message(pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Within">
+<Description><![CDATA[
+Assert inclusive numeric range (<= to and >= from): <br/>
+<br/>
+Do ..Within(User.Age, 5, 50)]]></Description>
+<FormalSpec>pValue,pMin,pMax</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Within", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Approximately">
+<Description><![CDATA[
+Assert floating point number near num within a +/- delta range.
+<br/>
+Do ..Approximately(3.49, 3.5, 0.01 )]]></Description>
+<FormalSpec>pValue:%Numeric,pExpected:%Numeric,pDelta:%Numeric=0.01</FormalSpec>
+<Implementation><![CDATA[	Do ..CloseTo(pValue, pExpected, pDelta)
+]]></Implementation>
+</Method>
+
+<Method name="CloseTo">
+<Description><![CDATA[
+Asserts that the target is equal expected, to within a +/- delta range.
+<br/>
+Do ..CloseTo(1.5, 1, 0.5)]]></Description>
+<FormalSpec>pValue:%Numeric,pExpected:%Numeric,pDelta:%Numeric=0.5</FormalSpec>
+<Implementation><![CDATA[
+	Set pMin = (pExpected - pDelta), 
+		pMax = (pExpected + pDelta)
+	Do ..SetResults(..Test("Close To", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Above">
+<Description><![CDATA[
+Above(num) and GreaterThan(num)<br/>
+Assert numeric value above the given value (> num): <br/>
+Do ..Above(User.Age, 5)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Above", (pValue > pNum),..Message("Above " _ pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="GreaterThan">
+<Description><![CDATA[
+Assert numeric value above the given value (> num):<br/>
+Do ..GreaterThan(User.Age, 5)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Greater Than", (pValue > pNum),..Message("Greater than "_pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="IsAtLeast">
+<Description><![CDATA[
+Assert is greater than or equal to (>=) valueToBeAtLeast(num)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is at Least", (pValue >= pNum),..Message("Is at Least " _ pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Below">
+<Description><![CDATA[
+Below(num) and LessThan(num)<br/>
+Assert numeric value below the given value (< num)<br/>
+Do ..Below(User.Age, 50)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Below", (pValue < pNum),..Message(pNum_" > ", pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="LessThan">
+<Description><![CDATA[
+Assert numeric value below the given value (< num)<br/>
+Do ..LessThan(User.Age, 50)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Less Than", (pValue < pNum),..Message("Less than "_pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="IsAtMost">
+<Description><![CDATA[
+Assert is less than or equal to (<=) valueToBeAtMost (num)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is at Most", (pValue <= pNum),..Message("Is at Most " _ pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="IsObject">
+<Description>
+Asserts that value is an object</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is Object", $IsObject(pValue),..Message("Is Object")))
+]]></Implementation>
+</Method>
+
+<Method name="IsNotObject">
+<Description>
+Asserts that value is NOT an object</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is Not Object", '$IsObject(pValue),..Message("Is not an Object")))
+]]></Implementation>
+</Method>
+
+<Method name="TypeOf">
+<Description><![CDATA[
+Asserts that value’s type is pClassName
+<br/>
+Do ..TypeOf(pClass, "%RegisteredObject" )]]></Description>
+<FormalSpec>pValue,pClassName</FormalSpec>
+<Implementation><![CDATA[
+	Set got = $ClassName(pValue)
+	Do ..SetResults(..Test("Is Not Object", got = pClassName,..Message(pClassName, got)))
 ]]></Implementation>
 </Method>
 
@@ -697,7 +854,7 @@ Memento Class</Description>
 <Class name="Pierogi.Suite">
 <Abstract>1</Abstract>
 <Super>%RegisteredObject</Super>
-<TimeChanged>64337,39102.353803</TimeChanged>
+<TimeChanged>64341,35720.881505</TimeChanged>
 <TimeCreated>64322,58801.760167</TimeCreated>
 
 <Parameter name="Terminal">
@@ -733,9 +890,8 @@ where the test cases are located.</Description>
 
 <Method name="ProjectPackage">
 <Description>
-Abstract method that should return the name of the package 
+Optional method that should return the name of the package 
 where the project classes are located.</Description>
-<Abstract>1</Abstract>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[	Quit ""
@@ -809,12 +965,13 @@ from the <method>Package</method> class method.]]></Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>Pierogi.Results</ReturnType>
 <Implementation><![CDATA[
-	Set tResults = ##class(Pierogi.Results).%New()
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
 	Try {
 		Set zhmBegin=$zh, 
 			tResults.Status = $$$OK
 			
-		Do ##class(Pierogi.TerminalDisplay).Cls()
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
 		
 		// Run DocTest
 		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
@@ -829,12 +986,14 @@ from the <method>Package</method> class method.]]></Description>
 		
 		Set zhmDuration=$zh-zhmBegin
 		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(zhmDuration)
-		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		Set tResults.Status = tSC
 	}
+	
+	Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
+
 	Quit tResults
 ]]></Implementation>
 </Method>
@@ -855,7 +1014,7 @@ from the <method>Package</method> class method.]]></Description>
 
 			Do pClass.Before()
 			
-			$$$THROWONERROR(tSC, pClass.Results.Clear())
+			$$$THROWONERROR(tSC, pClass.Clear())
 			Do $Method(pClass, test)
 			$$$THROWONERROR(tSC, pResults.Add(pClass, test))
 			
@@ -913,7 +1072,7 @@ from the <method>Package</method> class method.]]></Description>
 
 
 <Class name="Pierogi.TerminalDisplay">
-<TimeChanged>64338,48414.136371</TimeChanged>
+<TimeChanged>64341,57250.877931</TimeChanged>
 <TimeCreated>64328,35948.921536</TimeCreated>
 
 <Method name="Cls">
@@ -945,15 +1104,21 @@ from the <method>Package</method> class method.]]></Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pResults:Pierogi.Results</FormalSpec>
 <Implementation><![CDATA[
-	Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
-	Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
-	If pResults.Fail > 0 {
-		Write *7 // Ring the Bell
-		Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
-		// Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m",!
-		Do ..ShowFailures(pResults)
+	I $$$ISERR(pResults.Status) {
+		W !,?2,*27,..WarningColor(), "Ooops... ",	*27,"[0m",!
+		W !,?4, $System.Status.GetErrorText(pResults.Status),!!
 	} Else {
-		Write !,?2,*27,"[32m","Pass!", ..WellDone(),	*27,"[0m"
+	
+		Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
+		Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
+		If pResults.Fail > 0 {
+			Write *7 // Ring the Bell
+			Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
+			// Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m",!
+			Do ..ShowFailures(pResults)
+		} Else {
+			Write !!,?2,*27,"[32m","Pass!", ..WellDone(),	*27,"[0m"
+		}
 	}
 	Write !
 ]]></Implementation>
@@ -969,7 +1134,7 @@ from the <method>Package</method> class method.]]></Description>
 	Write *27,red, pResults.Failures.Count(),*27,"[0m"
 	Write *27,"[0m"," failures.",*27,"[0m",!
 	
-	S lastClass = ""
+	Set lastClass = ""
 	
 	While pResults.Failures.GetNext(.key) {
 		Set failure = pResults.Failures.GetAt(key)
@@ -1019,9 +1184,15 @@ from the <method>Package</method> class method.]]></Description>
 	Set $List(quote, *+1)= " Doing anything with perfection is like wearing an impeccable suit "_$Char(10,13)_
 							"  – the best way to make a great impression. "_$Char(10,13)_
 							"  Well done."
-	Set $List(quote, *+1)= " May success follow you, each and every place you go. In the halo of prosperity, may you always glow. May you get everything, that you could ever ask for. Great times lie ahead for you, of that we are very sure. Well done."
+	Set $List(quote, *+1)= " May success follow you, each and every place you go."_$Char(10,13)_
+							"   In the halo of prosperity, may you always glow."_$Char(10,13)_
+							"   May you get everything, that you could ever ask for."_$Char(10,13)_
+							"   Great times lie ahead for you, of that we are very sure."_$Char(10,13)_
+							"   Well done."
 	Set $List(quote, *+1)= " One job well done can be redemption for many a mistake of the past."_$Char(10,13)_
 							"  Keep it up."
+	Set $List(quote, *+1)= " Just keep swimming. "_$Char(10,13)_
+							"  -Dori"
 	Set $List(quote, *+1)= " The tipping point between a boy and a man is a job well done. "_$Char(10,13)_
 							"  Congratulations."
 	Set $List(quote, *+1)= " I always knew you that you have what it takes to be a real winner. "_$Char(10,13)_
@@ -1083,6 +1254,13 @@ from the <method>Package</method> class method.]]></Description>
 <ClassMethod>1</ClassMethod>
 <Private>1</Private>
 <Implementation><![CDATA[	Quit "[31m"
+]]></Implementation>
+</Method>
+
+<Method name="WarningColor">
+<ClassMethod>1</ClassMethod>
+<Private>1</Private>
+<Implementation><![CDATA[	Quit "[33m"
 ]]></Implementation>
 </Method>
 </Class>
@@ -1306,7 +1484,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Expectations">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64323,62129.72067</TimeChanged>
+<TimeChanged>64341,62764.950635</TimeChanged>
 <TimeCreated>64323,60317.218879</TimeCreated>
 
 <Method name="TestAssertIncrementNumber">
@@ -1371,6 +1549,163 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
 	
 	Do expectation.NotOk($$$OK)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
+</Method>
+
+<Method name="TestAssertEqual">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Equal(1,1)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	
+	Do expectation.Equal(1,2)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
+</Method>
+
+<Method name="TestRange">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Within(25, 5, 50)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Within(2, 5, 50)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Approximately(3.49, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Approximately(2.5, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.CloseTo(3.49, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.CloseTo(2.5, 3.5, 0.01)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
+</Method>
+
+<Method name="TestComparisons">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Above(50, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Above(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.GreaterThan(50, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.GreaterThan(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.IsAtLeast(25, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsAtLeast(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Do expectation.IsAtLeast(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),3)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.Below(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Below(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.LessThan(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.LessThan(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.IsAtMost(25, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsAtMost(26, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Do expectation.IsAtMost(2, 25)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),3)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
+]]></Implementation>
+</Method>
+
+<Method name="TestIsObject">
+<Implementation><![CDATA[
+	Set expectation = ##class(Pierogi.Expectations).%New(), 
+		test = ##class(%ListOfObjects).%New()
+	
+	Do expectation.IsObject(test)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsObject(1)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New()
+	
+	Do expectation.IsNotObject(1)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.IsNotObject(test)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ##class(Pierogi.Expectations).%New(), 
+		test2 = ##class(%ArrayOfDataTypes).%New()
+	
+	Do expectation.TypeOf(test,"%Library.ListOfObjects")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.TypeOf(test2,"%Library.ListOfObjects")
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 ]]></Implementation>
@@ -1552,7 +1887,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64337,32366.418312</TimeChanged>
+<TimeChanged>64341,62914.359261</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -4360,7 +4695,7 @@ Male Gender = 1</Description>
 
 
 
-<Project name="pierogi_system" LastModified="2017-02-22 07:46:17.783501">
+<Project name="pierogi_system" LastModified="2017-02-27 17:29:50.127878">
   <Items>
     <ProjectItem name="Pierogi" type="PKG"></ProjectItem>
     <ProjectItem name="PierogiTests" type="PKG"></ProjectItem>
