@@ -43,5 +43,32 @@ Method TestRun()
 	Do ..ItShouldBeEqual(results.Failures.GetAt(1).SpecTest,"Multiply")
 }
 
+Method TestRunningSpecificTests()
+{
+	#Dim results AS Pierogi.Results
+	
+	Set results = ##class(SampleTest.Suite).Only("ShouldTestOne")
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	Do ..ItShouldBeOk(results.Status)
+	Do ..ItShouldBeEqual(results.Tests(),1)
+	Do ..ItShouldBeEqual(results.Pass,1)
+	Do ..ItShouldBeEqual(results.Fail,0)
+	Do ..ItShouldBeEqual(results.Failures.Count(),0)
+	
+	Set results = ##class(SampleTest.Suite).Only("shouldtestone")
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	Do ..ItShouldBeEqual(results.Tests(),1)
+	Do ..ItShouldBeEqual(results.Pass,1)
+	Do ..ItShouldBeEqual(results.Fail,0)
+	Do ..ItShouldBeEqual(results.Failures.Count(),0)
+
+	Set results = ##class(SampleTest.Suite).Only("ShouldFail")
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	Do ..ItShouldBeEqual(results.Tests(),1)
+	Do ..ItShouldBeEqual(results.Pass,0)
+	Do ..ItShouldBeEqual(results.Fail,1)
+	Do ..ItShouldBeEqual(results.Failures.Count(),1)
+}
+
 }
 

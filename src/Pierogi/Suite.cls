@@ -84,32 +84,63 @@ ClassMethod Run() As Pierogi.Results
 	Set tSC = $$$OK, 
 		tResults = ##class(Pierogi.Results).%New()
 	Try {
-		Set zhmBegin=$zh, 
-			tResults.Status = $$$OK
-			
-		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
+		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
 		
 		// Run DocTest
 		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
 		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
-			
 			$$$THROWONERROR(tSC, ..RunTest($List(specsClass,idx), .tResults))
 			
 			Set idx = $Increment(idx)
 		}
 		
-		Set zhmDuration=$zh-zhmBegin
-		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(zhmDuration)
+		$$$THROWONERROR(tSC, ..BeforeTeardown(tResults, zhmBegin))
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		Set tResults.Status = tSC
 	}
 	
-	Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
+	Do ..Teardown(tResults)
 
+	Quit tResults
+}
+
+/// During development it can be helpful to only run a few specific tests.
+/// <br>
+/// This can be accomplished using the Only method.
+ClassMethod Only(pSpec As %String) As Pierogi.Results
+{
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
+	Try {
+		
+		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
+		
+		Set tSql = "Select Name As Method, Parent as Class from %Dictionary.MethodDefinition " _
+				" Where parent %StartsWith ? " _
+				" AND upper(Name) Like upper(?) " _
+				" Order by SequenceNumber ",
+			tStatement =  ##class(%SQL.Statement).%New()
+			
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		Set tRS = tStatement.execute(..GetSpecsPackage(), pSpec )
+		
+		While tRS.%Next() {
+			Set class = $ClassMethod(tRS.%Get("Class"),"%New")
+			$$$THROWONERROR(tSC, ..LifecycleHooks(class, $ListBuild(tRS.%Get("Method")), .tResults))
+		}
+		
+		$$$THROWONERROR(tSC, ..BeforeTeardown(tResults, zhmBegin))
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = tSC
+	}
+	Do ..Teardown(tResults)
+	
 	Quit tResults
 }
 
@@ -163,6 +194,47 @@ ClassMethod RunDocTests(ByRef pResults As Pierogi.Results) As %Status [ Private 
 	Try {
 		Set DocTest = ##class(Pierogi.DocTest).%New(..ProjectPackage(), ..#Terminal)
 		$$$THROWONERROR(tSC, DocTest.Run(.pResults))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod Setup(ByRef pResults As Pierogi.Results, Output pStartingTime) As %Status [ Private ]
+{
+	Set tSC = $$$OK
+	Try {
+		Set pStartingTime 	= $ZHorolog, 
+			pResults.Status = $$$OK
+
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
+			
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod BeforeTeardown(pResults As Pierogi.Results, pStartingTime, Output pDuration) As %Status [ Private ]
+{
+	Set tSC = $$$OK
+	Try {
+		Set pDuration = $ZHorolog - pStartingTime
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(pDuration)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod Teardown(pResults As Pierogi.Results) As %Status [ Private ]
+{
+	Set tSC = $$$OK
+	Try {
+		
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(pResults)
+		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
