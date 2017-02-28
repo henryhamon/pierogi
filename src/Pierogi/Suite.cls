@@ -166,7 +166,7 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 			Do pClass.After()
 		}
 		
-		Do pClass.AfterSetup()
+		Do pClass.AfterTeardown()
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}

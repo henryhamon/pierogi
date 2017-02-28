@@ -23,7 +23,7 @@ Method After()
 {
 }
 
-Method AfterSetup()
+Method AfterTeardown()
 {
 }
 
