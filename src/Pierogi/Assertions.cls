@@ -168,6 +168,64 @@ Method NotTypeOf(pValue, pClassName)
 	Do ..SetResults(..Test("Not Type Of", got '= pClassName,..Message("Is Not type of "_pClassName, got)))
 }
 
+/// Assert given object matches a Regex<br/>
+/// Given: String, otherValue: regexp. Uses %Regex.Matcher:
+/// 
+Method Regex(pValue, pRegex)
+{
+	Do ..Match(pValue, pRegex)
+}
+
+Method Match(pValue, pRegex)
+{
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+    Do ..SetResults(..Test("Match", matcher.Locate(),..Message("Match this pattern "_pRegex, pValue)))
+}
+
+Method NotMatch(pValue, pRegex)
+{
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+    Do ..SetResults(..Test("Not Match", 'matcher.Locate(),..Message("Not Match this pattern "_pRegex, pValue)))
+}
+
+/// Assert that a string starts with str.
+/// <br/>
+/// Do ..StartsWith('foobar','foo')
+Method StartsWith(pValue, pExpected)
+{
+	Set matcher = ##class(%Regex.Matcher).%New("^("_pExpected_")")
+	Set matcher.Text = pValue
+	
+	Do ..SetResults(..Test("StartsWith", matcher.Locate(),..Message("starts with "_pExpected, pValue)))
+}
+
+Method StartWith(pValue, pExpected)
+{
+	Do ..StartsWith(pValue, pExpected)
+}
+
+/// Assert that a string ends with str.
+/// <br/>
+/// Do ..EndsWith('foobar','foo')
+Method EndsWith(pValue, pExpected)
+{
+	Set matcher = ##class(%Regex.Matcher).%New(".*("_ pExpected _")$")
+	Set matcher.Text = pValue
+	Do ..SetResults(..Test("EndsWith", matcher.Locate(),..Message("ends with "_pExpected, pValue)))
+}
+
+Method EndWith(pValue, pExpected)
+{
+	Do ..EndsWith(pValue, pExpected)
+}
+
+Method EqualIgnoreCase(pValue, pExpected)
+{
+	Do ..SetResults(..Test("EqualIgnoreCase", $ZConvert(pValue,"l")=$ZConvert(pExpected,"l") ,..Message(pExpected, pValue)))
+}
+
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
 {
 	Set:pBR="" pBR = " "

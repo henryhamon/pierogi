@@ -1,6 +1,11 @@
 Class PierogiTests.Pierogi.Expectations Extends (%UnitTest.TestCase, PierogiTests.Pierogi.Helper)
 {
 
+Method ExpectationFactory() As Pierogi.Expectations
+{
+	Quit ##class(Pierogi.Expectations).%New()
+}
+
 Method TestAssertIncrementNumber()
 {
 	S assert1 = ##class(Pierogi.Assert).%New()
@@ -12,7 +17,7 @@ Method TestAssertIncrementNumber()
 
 Method TestAssertTrue()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.True($$$YES)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -26,7 +31,7 @@ Method TestAssertTrue()
 
 Method TestAssertFalse()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.False($$$YES)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -39,7 +44,7 @@ Method TestAssertFalse()
 
 Method TestStatusOk()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Ok($$$OK)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -52,7 +57,7 @@ Method TestStatusOk()
 
 Method TestStatusNotOk()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.NotOk($$$ERROR(5002,"Oops!...I Did It Again"))
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -65,7 +70,7 @@ Method TestStatusNotOk()
 
 Method TestAssertEqual()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Equal(1,1)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -79,7 +84,7 @@ Method TestAssertEqual()
 
 Method TestRange()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Within(25, 5, 50)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -89,7 +94,7 @@ Method TestRange()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Approximately(3.49, 3.5, 0.01)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -99,7 +104,7 @@ Method TestRange()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.CloseTo(3.49, 3.5, 0.01)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -112,7 +117,7 @@ Method TestRange()
 
 Method TestComparisons()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Above(50, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -122,8 +127,7 @@ Method TestComparisons()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.GreaterThan(50, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -132,8 +136,7 @@ Method TestComparisons()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.IsAtLeast(25, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -146,8 +149,7 @@ Method TestComparisons()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),3)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.Below(2, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -156,8 +158,7 @@ Method TestComparisons()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.LessThan(2, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -166,8 +167,7 @@ Method TestComparisons()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.IsAtMost(25, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -183,7 +183,7 @@ Method TestComparisons()
 
 Method TestIsObject()
 {
-	Set expectation = ##class(Pierogi.Expectations).%New(), 
+	Set expectation = ..ExpectationFactory(), 
 		test = ##class(%ListOfObjects).%New()
 	
 	Do expectation.IsObject(test)
@@ -194,8 +194,7 @@ Method TestIsObject()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.IsNotObject(1)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -204,7 +203,7 @@ Method TestIsObject()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New(), 
+	Set expectation = ..ExpectationFactory(), 
 		test2 = ##class(%ArrayOfDataTypes).%New()
 	
 	Do expectation.TypeOf(test,"%Library.ListOfObjects")
@@ -215,8 +214,7 @@ Method TestIsObject()
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.NotTypeOf(test2,"%Library.ListOfObjects")
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -226,8 +224,62 @@ Method TestIsObject()
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
-Method TestResult()
+Method TestStringComparison()
 {
+	Set expectation = ..ExpectationFactory(), 
+		emailvalidator = "^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$"
+	Do expectation.Match("john@doe.com",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Match("john@doe.something",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.Regex("john@doe.com",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Regex("john@doe.something",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+
+	Set expectation = ..ExpectationFactory()
+	Do expectation.NotMatch("john@doe.something",emailvalidator)	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.NotMatch("john@doe.com",emailvalidator)	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+
+	Set expectation = ..ExpectationFactory()
+	Do expectation.StartWith("foobar","foo")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.StartWith("barfoo","foo")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.EndWith("foobar","bar")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.EndWith("barfoo","bar")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.EqualIgnoreCase("abcdef","AbCdEf")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.EqualIgnoreCase("abcdef","AbdEf")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
 }
