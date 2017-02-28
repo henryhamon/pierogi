@@ -23,10 +23,12 @@ ClassMethod Fail()
 
 ClassMethod Resume(pResults As Pierogi.Results)
 {
-	I $$$ISERR(pResults.Status) {
-		W !,?2,*27,..WarningColor(), "Ooops... ",	*27,"[0m",!
-		W !,?4, $System.Status.GetErrorText(pResults.Status),!!
-	} Else {
+	If $$$ISERR(pResults.Status) {
+		Write !,?2,*27,..WarningColor(), "Ooops... Well, this is embarrassing...",	*27,"[0m",!
+		Write !,?4,$System.Status.GetErrorText(pResults.Status),!!
+	}
+	
+	If pResults.Tests() > 0 {
 	
 		Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
 		Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
