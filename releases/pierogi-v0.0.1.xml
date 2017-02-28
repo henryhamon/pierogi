@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-27 17:29:50">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-02-28 17:06:35">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64335,31796.307642</TimeChanged>
@@ -96,7 +96,7 @@ Property Expectation As %String;
 
 <Class name="Pierogi.Assertions">
 <Abstract>1</Abstract>
-<TimeChanged>64341,62690.623915</TimeChanged>
+<TimeChanged>64342,33012.57281</TimeChanged>
 <TimeCreated>64323,54295.847656</TimeCreated>
 
 <Property name="Status">
@@ -311,7 +311,92 @@ Do ..TypeOf(pClass, "%RegisteredObject" )]]></Description>
 <FormalSpec>pValue,pClassName</FormalSpec>
 <Implementation><![CDATA[
 	Set got = $ClassName(pValue)
-	Do ..SetResults(..Test("Is Not Object", got = pClassName,..Message(pClassName, got)))
+	Do ..SetResults(..Test("Type Of", got = pClassName,..Message("Type of "_pClassName, got)))
+]]></Implementation>
+</Method>
+
+<Method name="NotTypeOf">
+<Description><![CDATA[
+Asserts that value’s type is <b>not</b> pClassName
+<br/>
+Do ..NotTypeOf(pClass, "%RegisteredObject" )]]></Description>
+<FormalSpec>pValue,pClassName</FormalSpec>
+<Implementation><![CDATA[
+	Set got = $ClassName(pValue)
+	Do ..SetResults(..Test("Not Type Of", got '= pClassName,..Message("Is Not type of "_pClassName, got)))
+]]></Implementation>
+</Method>
+
+<Method name="Regex">
+<Description><![CDATA[
+Assert given object matches a Regex<br/>
+Given: String, otherValue: regexp. Uses %Regex.Matcher:
+]]></Description>
+<FormalSpec>pValue,pRegex</FormalSpec>
+<Implementation><![CDATA[	Do ..Match(pValue, pRegex)
+]]></Implementation>
+</Method>
+
+<Method name="Match">
+<FormalSpec>pValue,pRegex</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+    Do ..SetResults(..Test("Match", matcher.Locate(),..Message("Match this pattern "_pRegex, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="NotMatch">
+<FormalSpec>pValue,pRegex</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+    Do ..SetResults(..Test("Not Match", 'matcher.Locate(),..Message("Not Match this pattern "_pRegex, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="StartsWith">
+<Description><![CDATA[
+Assert that a string starts with str.
+<br/>
+Do ..StartsWith('foobar','foo')]]></Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New("^("_pExpected_")")
+	Set matcher.Text = pValue
+	
+	Do ..SetResults(..Test("StartsWith", matcher.Locate(),..Message("starts with "_pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="StartWith">
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..StartsWith(pValue, pExpected)
+]]></Implementation>
+</Method>
+
+<Method name="EndsWith">
+<Description><![CDATA[
+Assert that a string ends with str.
+<br/>
+Do ..EndsWith('foobar','foo')]]></Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New(".*("_ pExpected _")$")
+	Set matcher.Text = pValue
+	Do ..SetResults(..Test("EndsWith", matcher.Locate(),..Message("ends with "_pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="EndWith">
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..EndsWith(pValue, pExpected)
+]]></Implementation>
+</Method>
+
+<Method name="EqualIgnoreCase">
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("EqualIgnoreCase", $ZConvert(pValue,"l")=$ZConvert(pExpected,"l") ,..Message(pExpected, pValue)))
 ]]></Implementation>
 </Method>
 
@@ -815,7 +900,7 @@ Memento Class</Description>
 
 <Class name="Pierogi.Spec">
 <Super>Pierogi.Expectations</Super>
-<TimeChanged>64324,62427.622736</TimeChanged>
+<TimeChanged>64342,57342.160223</TimeChanged>
 <TimeCreated>64324,33238.095575</TimeCreated>
 
 <Property name="Method">
@@ -846,7 +931,7 @@ Memento Class</Description>
 <Method name="After">
 </Method>
 
-<Method name="AfterSetup">
+<Method name="AfterTeardown">
 </Method>
 </Class>
 
@@ -854,7 +939,7 @@ Memento Class</Description>
 <Class name="Pierogi.Suite">
 <Abstract>1</Abstract>
 <Super>%RegisteredObject</Super>
-<TimeChanged>64341,35720.881505</TimeChanged>
+<TimeChanged>64342,57358.271914</TimeChanged>
 <TimeCreated>64322,58801.760167</TimeCreated>
 
 <Parameter name="Terminal">
@@ -968,32 +1053,68 @@ from the <method>Package</method> class method.]]></Description>
 	Set tSC = $$$OK, 
 		tResults = ##class(Pierogi.Results).%New()
 	Try {
-		Set zhmBegin=$zh, 
-			tResults.Status = $$$OK
-			
-		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
+		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
 		
 		// Run DocTest
 		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
 		
 		Set specsClass = ..Specs(), idx = 1
 		While (( idx > 0) && (idx <= $ListLength(specsClass))){
-			
 			$$$THROWONERROR(tSC, ..RunTest($List(specsClass,idx), .tResults))
 			
 			Set idx = $Increment(idx)
 		}
 		
-		Set zhmDuration=$zh-zhmBegin
-		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(zhmDuration)
+		$$$THROWONERROR(tSC, ..BeforeTeardown(tResults, zhmBegin))
 		
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		Set tResults.Status = tSC
 	}
 	
-	Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(tResults)
+	Do ..Teardown(tResults)
 
+	Quit tResults
+]]></Implementation>
+</Method>
+
+<Method name="Only">
+<Description><![CDATA[
+During development it can be helpful to only run a few specific tests.
+<br>
+This can be accomplished using the Only method.]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pSpec:%String</FormalSpec>
+<ReturnType>Pierogi.Results</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
+	Try {
+		
+		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
+		
+		Set tSql = "Select Name As Method, Parent as Class from %Dictionary.MethodDefinition " _
+				" Where parent %StartsWith ? " _
+				" AND upper(Name) Like upper(?) " _
+				" Order by SequenceNumber ",
+			tStatement =  ##class(%SQL.Statement).%New()
+			
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		Set tRS = tStatement.execute(..GetSpecsPackage(), pSpec )
+		
+		While tRS.%Next() {
+			Set class = $ClassMethod(tRS.%Get("Class"),"%New")
+			$$$THROWONERROR(tSC, ..LifecycleHooks(class, $ListBuild(tRS.%Get("Method")), .tResults))
+		}
+		
+		$$$THROWONERROR(tSC, ..BeforeTeardown(tResults, zhmBegin))
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = tSC
+	}
+	Do ..Teardown(tResults)
+	
 	Quit tResults
 ]]></Implementation>
 </Method>
@@ -1024,7 +1145,7 @@ from the <method>Package</method> class method.]]></Description>
 			Do pClass.After()
 		}
 		
-		Do pClass.AfterSetup()
+		Do pClass.AfterTeardown()
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}
@@ -1068,11 +1189,67 @@ from the <method>Package</method> class method.]]></Description>
 	Quit tSC
 ]]></Implementation>
 </Method>
+
+<Method name="Setup">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&pResults:Pierogi.Results,*pStartingTime]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pStartingTime 	= $ZHorolog, 
+			pResults.Status = $$$OK
+
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
+			
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="BeforeTeardown">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pResults:Pierogi.Results,pStartingTime,*pDuration</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pDuration = $ZHorolog - pStartingTime
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(pDuration)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Teardown">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pResults:Pierogi.Results</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(pResults)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
 </Class>
 
 
 <Class name="Pierogi.TerminalDisplay">
-<TimeChanged>64341,57250.877931</TimeChanged>
+<TimeChanged>64342,58110.728551</TimeChanged>
 <TimeCreated>64328,35948.921536</TimeCreated>
 
 <Method name="Cls">
@@ -1104,10 +1281,12 @@ from the <method>Package</method> class method.]]></Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pResults:Pierogi.Results</FormalSpec>
 <Implementation><![CDATA[
-	I $$$ISERR(pResults.Status) {
-		W !,?2,*27,..WarningColor(), "Ooops... ",	*27,"[0m",!
-		W !,?4, $System.Status.GetErrorText(pResults.Status),!!
-	} Else {
+	If $$$ISERR(pResults.Status) {
+		Write !,?2,*27,..WarningColor(), "Ooops... Well, this is embarrassing...",	*27,"[0m",!
+		Write !,?4,$System.Status.GetErrorText(pResults.Status),!!
+	}
+	
+	If pResults.Tests() > 0 {
 	
 		Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
 		Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
@@ -1484,8 +1663,14 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Expectations">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64341,62764.950635</TimeChanged>
+<TimeChanged>64342,32938.316841</TimeChanged>
 <TimeCreated>64323,60317.218879</TimeCreated>
+
+<Method name="ExpectationFactory">
+<ReturnType>Pierogi.Expectations</ReturnType>
+<Implementation><![CDATA[	Quit ##class(Pierogi.Expectations).%New()
+]]></Implementation>
+</Method>
 
 <Method name="TestAssertIncrementNumber">
 <Implementation><![CDATA[
@@ -1499,7 +1684,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestAssertTrue">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.True($$$YES)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1514,7 +1699,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestAssertFalse">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.False($$$YES)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1528,7 +1713,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestStatusOk">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Ok($$$OK)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1542,7 +1727,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestStatusNotOk">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.NotOk($$$ERROR(5002,"Oops!...I Did It Again"))
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1556,7 +1741,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestAssertEqual">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Equal(1,1)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1571,7 +1756,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestRange">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Within(25, 5, 50)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1581,7 +1766,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Approximately(3.49, 3.5, 0.01)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1591,7 +1776,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.CloseTo(3.49, 3.5, 0.01)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1605,7 +1790,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestComparisons">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New()
+	Set expectation = ..ExpectationFactory()
 	
 	Do expectation.Above(50, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
@@ -1615,8 +1800,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.GreaterThan(50, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -1625,8 +1809,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.IsAtLeast(25, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -1639,8 +1822,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),3)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(3).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.Below(2, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -1649,8 +1831,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.LessThan(2, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -1659,8 +1840,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.IsAtMost(25, 25)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -1677,7 +1857,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Method name="TestIsObject">
 <Implementation><![CDATA[
-	Set expectation = ##class(Pierogi.Expectations).%New(), 
+	Set expectation = ..ExpectationFactory(), 
 		test = ##class(%ListOfObjects).%New()
 	
 	Do expectation.IsObject(test)
@@ -1688,8 +1868,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New()
-	
+	Set expectation = ..ExpectationFactory()
 	Do expectation.IsNotObject(1)
 	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
@@ -1698,7 +1877,7 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 	
-	Set expectation = ##class(Pierogi.Expectations).%New(), 
+	Set expectation = ..ExpectationFactory(), 
 		test2 = ##class(%ArrayOfDataTypes).%New()
 	
 	Do expectation.TypeOf(test,"%Library.ListOfObjects")
@@ -1708,10 +1887,75 @@ from the <method>Package</method> class method.]]></Description>
 	Do expectation.TypeOf(test2,"%Library.ListOfObjects")
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.NotTypeOf(test2,"%Library.ListOfObjects")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.NotTypeOf(test,"%Library.ListOfObjects")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 ]]></Implementation>
 </Method>
 
-<Method name="TestResult">
+<Method name="TestStringComparison">
+<Implementation><![CDATA[
+	Set expectation = ..ExpectationFactory(), 
+		emailvalidator = "^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$"
+	Do expectation.Match("john@doe.com",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Match("john@doe.something",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.Regex("john@doe.com",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Regex("john@doe.something",emailvalidator)
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+
+	Set expectation = ..ExpectationFactory()
+	Do expectation.NotMatch("john@doe.something",emailvalidator)	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.NotMatch("john@doe.com",emailvalidator)	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+
+	Set expectation = ..ExpectationFactory()
+	Do expectation.StartWith("foobar","foo")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.StartWith("barfoo","foo")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.EndWith("foobar","bar")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.EndWith("barfoo","bar")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.EqualIgnoreCase("abcdef","AbCdEf")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.EqualIgnoreCase("abcdef","AbdEf")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+]]></Implementation>
 </Method>
 </Class>
 
@@ -1771,7 +2015,7 @@ from the <method>Package</method> class method.]]></Description>
 
 <Class name="PierogiTests.Pierogi.Suite">
 <Super>%UnitTest.TestCase,PierogiTests.Pierogi.Helper</Super>
-<TimeChanged>64335,60207.540648</TimeChanged>
+<TimeChanged>64342,55672.740235</TimeChanged>
 <TimeCreated>64324,30757.305069</TimeCreated>
 
 <Method name="TestPackageName">
@@ -1816,6 +2060,34 @@ from the <method>Package</method> class method.]]></Description>
 	Do ..ItShouldBeEqual(results.Failures.Count(),3)
 	Do ..ItShouldBeEqual(results.Failures.GetAt(1).ClassName,"SamplePrj.PierogiDelivery.Ope.Calculator")
 	Do ..ItShouldBeEqual(results.Failures.GetAt(1).SpecTest,"Multiply")
+]]></Implementation>
+</Method>
+
+<Method name="TestRunningSpecificTests">
+<Implementation><![CDATA[
+	#Dim results AS Pierogi.Results
+	
+	Set results = ##class(SampleTest.Suite).Only("ShouldTestOne")
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	Do ..ItShouldBeOk(results.Status)
+	Do ..ItShouldBeEqual(results.Tests(),1)
+	Do ..ItShouldBeEqual(results.Pass,1)
+	Do ..ItShouldBeEqual(results.Fail,0)
+	Do ..ItShouldBeEqual(results.Failures.Count(),0)
+	
+	Set results = ##class(SampleTest.Suite).Only("shouldtestone")
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	Do ..ItShouldBeEqual(results.Tests(),1)
+	Do ..ItShouldBeEqual(results.Pass,1)
+	Do ..ItShouldBeEqual(results.Fail,0)
+	Do ..ItShouldBeEqual(results.Failures.Count(),0)
+
+	Set results = ##class(SampleTest.Suite).Only("ShouldFail")
+	Do ..ItShouldBeEqual($ClassName(results),"Pierogi.Results")
+	Do ..ItShouldBeEqual(results.Tests(),1)
+	Do ..ItShouldBeEqual(results.Pass,0)
+	Do ..ItShouldBeEqual(results.Fail,1)
+	Do ..ItShouldBeEqual(results.Failures.Count(),1)
 ]]></Implementation>
 </Method>
 </Class>
@@ -1887,7 +2159,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64341,62914.359261</TimeChanged>
+<TimeChanged>64342,58135.692769</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -1935,7 +2207,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>12.5000%</Selectivity>
+<Selectivity>11.1111%</Selectivity>
 </Property>
 <Property name="Name">
 <Selectivity>10.0000%</Selectivity>
