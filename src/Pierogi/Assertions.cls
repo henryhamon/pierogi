@@ -156,7 +156,16 @@ Method IsNotObject(pValue)
 Method TypeOf(pValue, pClassName)
 {
 	Set got = $ClassName(pValue)
-	Do ..SetResults(..Test("Is Not Object", got = pClassName,..Message(pClassName, got)))
+	Do ..SetResults(..Test("Type Of", got = pClassName,..Message("Type of "_pClassName, got)))
+}
+
+/// Asserts that value?s type is <b>not</b> pClassName
+/// <br/>
+/// Do ..NotTypeOf(pClass, "%RegisteredObject" )
+Method NotTypeOf(pValue, pClassName)
+{
+	Set got = $ClassName(pValue)
+	Do ..SetResults(..Test("Not Type Of", got '= pClassName,..Message("Is Not type of "_pClassName, got)))
 }
 
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String
