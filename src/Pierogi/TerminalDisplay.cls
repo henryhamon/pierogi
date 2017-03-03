@@ -1,26 +1,31 @@
 Class Pierogi.TerminalDisplay
 {
 
+/// Clean the terminal screen
 ClassMethod Cls()
 {
 	Write #,!,?2,"Baking Pierogies and Running Tests",!,*12,?4
 }
 
+/// Display the class name
 ClassMethod Class(pClassName As %String)
 {
 	Write !,*27,"[0m",pClassName,*27,"[0m",!
 }
 
+/// Print a green dot, when the test passes
 ClassMethod Pass()
 {
 	Write *27,"[32m",".",*27,"[0m"
 }
 
+/// Print a red "F", when the test fails
 ClassMethod Fail()
 {
 	Write *27,"[31m","F",*27,"[0m"
 }
 
+/// Display the test resume
 ClassMethod Resume(pResults As Pierogi.Results)
 {
 	If $$$ISERR(pResults.Status) {
@@ -44,6 +49,7 @@ ClassMethod Resume(pResults As Pierogi.Results)
 	Write !
 }
 
+/// Print the failures details
 ClassMethod ShowFailures(pResults As Pierogi.Results)
 {
 	Set red = "[31m"
@@ -77,11 +83,13 @@ ClassMethod ShowFailures(pResults As Pierogi.Results)
 	}
 }
 
+/// Print the duration of the tests in seconds
 ClassMethod FinishedIn(pDuration)
 {
 	Write !!,?2,*27,"[0m","Finished in ",pDuration," seconds",*27,"[0m",!
 }
 
+/// Print a motivational message...
 ClassMethod WellDone()
 {
 	Set $List(quote, *+1)= " Great Job :)"
