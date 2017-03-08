@@ -1,4 +1,4 @@
-Class Pierogi.Ensemble Extends (Pierogi.Core, Pierogi.Ensemble.Core)
+Class Pierogi.Ensemble Extends (Pierogi.Ensemble.Core, Pierogi.Spec)
 {
 
 }

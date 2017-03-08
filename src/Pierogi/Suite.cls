@@ -47,7 +47,7 @@ ClassMethod Specs()
 	Set testList = ""
 	
 	While class'="" {
-		Set:($$issubclassof^%occCompile(class,"Pierogi.Spec")
+		Set:(($$issubclassof^%occCompile(class,"Pierogi.Spec")||$$issubclassof^%occCompile(class,"Pierogi.Ensemble"))
 		   && '##class(%Dictionary.ClassDefinition).%OpenId(class).Abstract) $List(testList, *+1) = class
 			
 		Set class = $Order(classList(class))
