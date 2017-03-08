@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-01 09:14:04">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-08 13:46:29">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64335,31796.307642</TimeChanged>
@@ -720,8 +720,8 @@ Do ..EndsWith('foobar','foo')]]></Description>
 
 
 <Class name="Pierogi.Ensemble">
-<Super>Pierogi.Core,Pierogi.Ensemble.Core</Super>
-<TimeChanged>64322,55592.813341</TimeChanged>
+<Super>Pierogi.Ensemble.Core,Pierogi.Spec</Super>
+<TimeChanged>64350,49327.451605</TimeChanged>
 <TimeCreated>64322,55563.726751</TimeCreated>
 </Class>
 
@@ -814,8 +814,6 @@ Do ..EndsWith('foobar','foo')]]></Description>
 </Data>
 </Storage>
 </Class>
-
-
 
 
 <Class name="Pierogi.Results">
@@ -939,7 +937,7 @@ Memento Class</Description>
 <Class name="Pierogi.Suite">
 <Abstract>1</Abstract>
 <Super>%RegisteredObject</Super>
-<TimeChanged>64342,57358.271914</TimeChanged>
+<TimeChanged>64350,49376.787458</TimeChanged>
 <TimeCreated>64322,58801.760167</TimeCreated>
 
 <Parameter name="Terminal">
@@ -1009,7 +1007,7 @@ from the <method>Package</method> class method.]]></Description>
 	Set testList = ""
 	
 	While class'="" {
-		Set:($$issubclassof^%occCompile(class,"Pierogi.Spec")
+		Set:(($$issubclassof^%occCompile(class,"Pierogi.Spec")||$$issubclassof^%occCompile(class,"Pierogi.Ensemble"))
 		   && '##class(%Dictionary.ClassDefinition).%OpenId(class).Abstract) $List(testList, *+1) = class
 			
 		Set class = $Order(classList(class))
@@ -1249,16 +1247,20 @@ This can be accomplished using the Only method.]]></Description>
 
 
 <Class name="Pierogi.TerminalDisplay">
-<TimeChanged>64342,58110.728551</TimeChanged>
+<TimeChanged>64345,58936.969099</TimeChanged>
 <TimeCreated>64328,35948.921536</TimeCreated>
 
 <Method name="Cls">
+<Description>
+Clean the terminal screen</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write #,!,?2,"Baking Pierogies and Running Tests",!,*12,?4
 ]]></Implementation>
 </Method>
 
 <Method name="Class">
+<Description>
+Display the class name</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pClassName:%String</FormalSpec>
 <Implementation><![CDATA[	Write !,*27,"[0m",pClassName,*27,"[0m",!
@@ -1266,18 +1268,24 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="Pass">
+<Description>
+Print a green dot, when the test passes</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write *27,"[32m",".",*27,"[0m"
 ]]></Implementation>
 </Method>
 
 <Method name="Fail">
+<Description>
+Print a red "F", when the test fails</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write *27,"[31m","F",*27,"[0m"
 ]]></Implementation>
 </Method>
 
 <Method name="Resume">
+<Description>
+Display the test resume</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pResults:Pierogi.Results</FormalSpec>
 <Implementation><![CDATA[
@@ -1304,6 +1312,8 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="ShowFailures">
+<Description>
+Print the failures details</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pResults:Pierogi.Results</FormalSpec>
 <Implementation><![CDATA[
@@ -1340,6 +1350,8 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="FinishedIn">
+<Description>
+Print the duration of the tests in seconds</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pDuration</FormalSpec>
 <Implementation><![CDATA[	Write !!,?2,*27,"[0m","Finished in ",pDuration," seconds",*27,"[0m",!
@@ -1347,6 +1359,8 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="WellDone">
+<Description>
+Print a motivational message...</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[
 	Set $List(quote, *+1)= " Great Job :)"
@@ -2159,7 +2173,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 
 <Class name="SamplePrj.PierogiDelivery.Data.Clients">
 <Super>%Persistent,%Populate</Super>
-<TimeChanged>64342,58135.692769</TimeChanged>
+<TimeChanged>64350,49422.917258</TimeChanged>
 <TimeCreated>64317,40075.374598</TimeCreated>
 
 <Property name="Name">
@@ -2207,7 +2221,7 @@ Default value will be YearMonthDay_tests.xml</Description>
 <Selectivity>100.0000%</Selectivity>
 </Property>
 <Property name="City">
-<Selectivity>11.1111%</Selectivity>
+<Selectivity>12.5000%</Selectivity>
 </Property>
 <Property name="Name">
 <Selectivity>10.0000%</Selectivity>
@@ -3433,6 +3447,8 @@ where the project classes are located.</Description>
 ]]></Implementation>
 </Method>
 </Class>
+
+
 
 
 <Class name="SampleTest.spec01">
@@ -4965,18 +4981,4 @@ Male Gender = 1</Description>
 </Class>
 
 
-
-
-<Project name="pierogi_system" LastModified="2017-02-27 17:29:50.127878">
-  <Items>
-    <ProjectItem name="Pierogi" type="PKG"></ProjectItem>
-    <ProjectItem name="PierogiTests" type="PKG"></ProjectItem>
-    <ProjectItem name="PierogiTests.Pierogi" type="CLS"></ProjectItem>
-    <ProjectItem name="SamplePrj" type="PKG"></ProjectItem>
-    <ProjectItem name="SampleTest" type="PKG"></ProjectItem>
-    <ProjectItem name="SampleTest.PierogiTest01" type="CLS"></ProjectItem>
-    <ProjectItem name="SampleTest.PierogiTest02" type="CLS"></ProjectItem>
-    <ProjectItem name="cosFaker" type="PKG"></ProjectItem>
-  </Items>
-</Project>
 </Export>
