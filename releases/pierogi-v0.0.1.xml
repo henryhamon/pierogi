@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-01 09:13:20">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-08 13:47:46">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64335,31796.307642</TimeChanged>
@@ -621,111 +621,6 @@ Do ..EndsWith('foobar','foo')]]></Description>
 </Class>
 
 
-<Class name="Pierogi.Ensemble.Core">
-<TimeChanged>64322,50260.004598</TimeChanged>
-<TimeCreated>64322,50260.004598</TimeCreated>
-
-<Method name="RunTimeInfo">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,*pConfigName:%String,*pClassName:%String</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Set tSC = $$$OK
-	Try {
-		Set pConfigName = "", pClassName = ""
-		Set pConfigName = $get(^Ens.Runtime("DispatchName",pTargetDispatchName))
-		Set:pConfigName'="" pClassName =  $get(^Ens.Runtime("ConfigItem",pConfigName,"ClassName"))
-	} Catch tException {
-		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-	}
-	Quit tSC
-]]></Implementation>
-</Method>
-
-<Method name="IsAService">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pClassName:%String</FormalSpec>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Set tResult = $$$NO
-	Try {
-		Set class = ##class(%Dictionary.ClassDefinition).%OpenId(pClassName)
-		Set:($IsObject(class)&&($Find(class.Super,"Ens.BusinessService")>0)) tResult = $$$YES
-	} Catch tException {
-		Set tResult = $$$NO
-	}
-	Quit tResult
-]]></Implementation>
-</Method>
-
-<Method name="Call">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Set tSC = $$$OK, pOutput = ""
-	Try {
-		$$$THROWONERROR(tSC, ..RunTimeInfo(pTargetDispatchName, .pConfigName, .pClassname))
-		Set:pClassname="" tSC = $$$ERROR(5002,pTargetDispatchName _ " Not Found")
-		Throw:$$$ISERR(tSC)
-		
-		If ..IsAService(pClassname) {
-			$$$THROWONERROR(tSC, ..CallWithBusinessService(pTargetDispatchName, pInput, .pOutput))
-		} Else {
-			$$$THROWONERROR(tSC, ..CallWithoutBusinessService(pTargetDispatchName, pInput, .pOutput))
-		}
-		
-	} Catch tException {
-		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-	}
-	Quit tSC
-]]></Implementation>
-</Method>
-
-<Method name="CallWithBusinessService">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
-<Private>1</Private>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Set tSC = $$$OK
-	Try {
-		$$$THROWONERROR(tSC, ##class(Ens.Director).CreateBusinessService(pTargetDispatchName,.tService))
-		Do tService.ProcessInput(pInput,.pOutput)
-		
-	} Catch tException {
-		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-	}
-	Quit tSC
-]]></Implementation>
-</Method>
-
-<Method name="CallWithoutBusinessService">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
-<Private>1</Private>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Set tSC = $$$OK
-	Try {
-		$$$THROWONERROR(tSC,  ##Class(EnsLib.Testing.Service).SendTestRequest(pTargetDispatchName, pInput, .pOutput, .tSessionId, $$$YES))
-		Set ^CacheTemp.EnsRuntimeAppData($Namespace,"EnsLib.Testing.Service",tSessionId,"start") = $ZDatetime($ztimestamp,3,,3)
-	} Catch tException {
-		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
-	}
-	Quit tSC
-]]></Implementation>
-</Method>
-</Class>
-
-
-<Class name="Pierogi.Ensemble">
-<Super>Pierogi.Core,Pierogi.Ensemble.Core</Super>
-<TimeChanged>64322,55592.813341</TimeChanged>
-<TimeCreated>64322,55563.726751</TimeCreated>
-</Class>
-
-
 <Class name="Pierogi.Expectations">
 <Super>%RegisteredObject,Pierogi.Assertions</Super>
 <TimeChanged>64324,30647.803428</TimeChanged>
@@ -937,7 +832,7 @@ Memento Class</Description>
 <Class name="Pierogi.Suite">
 <Abstract>1</Abstract>
 <Super>%RegisteredObject</Super>
-<TimeChanged>64342,57358.271914</TimeChanged>
+<TimeChanged>64350,49376.787458</TimeChanged>
 <TimeCreated>64322,58801.760167</TimeCreated>
 
 <Parameter name="Terminal">
@@ -1007,7 +902,7 @@ from the <method>Package</method> class method.]]></Description>
 	Set testList = ""
 	
 	While class'="" {
-		Set:($$issubclassof^%occCompile(class,"Pierogi.Spec")
+		Set:(($$issubclassof^%occCompile(class,"Pierogi.Spec")||$$issubclassof^%occCompile(class,"Pierogi.Ensemble"))
 		   && '##class(%Dictionary.ClassDefinition).%OpenId(class).Abstract) $List(testList, *+1) = class
 			
 		Set class = $Order(classList(class))
@@ -1247,16 +1142,20 @@ This can be accomplished using the Only method.]]></Description>
 
 
 <Class name="Pierogi.TerminalDisplay">
-<TimeChanged>64342,58110.728551</TimeChanged>
+<TimeChanged>64345,58936.969099</TimeChanged>
 <TimeCreated>64328,35948.921536</TimeCreated>
 
 <Method name="Cls">
+<Description>
+Clean the terminal screen</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write #,!,?2,"Baking Pierogies and Running Tests",!,*12,?4
 ]]></Implementation>
 </Method>
 
 <Method name="Class">
+<Description>
+Display the class name</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pClassName:%String</FormalSpec>
 <Implementation><![CDATA[	Write !,*27,"[0m",pClassName,*27,"[0m",!
@@ -1264,18 +1163,24 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="Pass">
+<Description>
+Print a green dot, when the test passes</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write *27,"[32m",".",*27,"[0m"
 ]]></Implementation>
 </Method>
 
 <Method name="Fail">
+<Description>
+Print a red "F", when the test fails</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[	Write *27,"[31m","F",*27,"[0m"
 ]]></Implementation>
 </Method>
 
 <Method name="Resume">
+<Description>
+Display the test resume</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pResults:Pierogi.Results</FormalSpec>
 <Implementation><![CDATA[
@@ -1302,6 +1207,8 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="ShowFailures">
+<Description>
+Print the failures details</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pResults:Pierogi.Results</FormalSpec>
 <Implementation><![CDATA[
@@ -1338,6 +1245,8 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="FinishedIn">
+<Description>
+Print the duration of the tests in seconds</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>pDuration</FormalSpec>
 <Implementation><![CDATA[	Write !!,?2,*27,"[0m","Finished in ",pDuration," seconds",*27,"[0m",!
@@ -1345,6 +1254,8 @@ This can be accomplished using the Only method.]]></Description>
 </Method>
 
 <Method name="WellDone">
+<Description>
+Print a motivational message...</Description>
 <ClassMethod>1</ClassMethod>
 <Implementation><![CDATA[
 	Set $List(quote, *+1)= " Great Job :)"
@@ -1441,6 +1352,4 @@ This can be accomplished using the Only method.]]></Description>
 ]]></Implementation>
 </Method>
 </Class>
-
-
 </Export>
