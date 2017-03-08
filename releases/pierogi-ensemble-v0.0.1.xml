@@ -1,0 +1,1462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-08 13:48:32">
+<Class name="Pierogi.Assert">
+<Super>%SerialObject</Super>
+<TimeChanged>64335,31796.307642</TimeChanged>
+<TimeCreated>64322,62300.698768</TimeCreated>
+
+<Property name="Number">
+<Description>
+The number of the assertion</Description>
+<Type>%Integer</Type>
+</Property>
+
+<Property name="Ok">
+<Description>
+Whether the assertion passed or failed</Description>
+<Type>%Boolean</Type>
+</Property>
+
+<Property name="Name">
+<Description>
+The Name of the assertion</Description>
+<Type>%String</Type>
+</Property>
+
+<Property name="Msg">
+<Description>
+The Expectation message when it fails</Description>
+<Type>%String</Type>
+</Property>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+/// The Expectation that this Assert belongs
+Property Expectation As %String;
+//*/
+]]></Content>
+</UDLText>
+
+<Method name="%OnNew">
+<FormalSpec>pLastNumber:%Integer=0</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set ..Number = $Increment(pLastNumber)
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="Satisfy">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pLastNumber:%Integer=0,pName:%String,pResult:%Boolean=0,pMessage:%String=""</FormalSpec>
+<ReturnType>Pierogi.Assert</ReturnType>
+<Implementation><![CDATA[
+	Set tAssert = ##class(Pierogi.Assert).%New( pLastNumber ), 
+		tAssert.Ok = pResult, 
+		tAssert.Name = pName
+	Set:((tAssert.Ok=$$$NO) && (pMessage'="")) tAssert.Msg = pMessage
+	
+	Quit tAssert
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>AssertState</State>
+<StreamLocation>^Pierogi.AssertS</StreamLocation>
+<Data name="AssertState">
+<Value name="1">
+<Value>Number</Value>
+</Value>
+<Value name="2">
+<Value>Ok</Value>
+</Value>
+<Value name="3">
+<Value>Name</Value>
+</Value>
+<Value name="4">
+<Value>Msg</Value>
+</Value>
+<Value name="5">
+<Value>Expectation</Value>
+</Value>
+<Value name="6">
+<Value>x</Value>
+</Value>
+<Value name="7">
+<Value>xyz</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Pierogi.Assertions">
+<Abstract>1</Abstract>
+<TimeChanged>64342,33012.57281</TimeChanged>
+<TimeCreated>64323,54295.847656</TimeCreated>
+
+<Property name="Status">
+<Type>%String</Type>
+<Internal>1</Internal>
+<InitialExpression>"succeed"</InitialExpression>
+</Property>
+
+<Property name="Results">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
+<Property name="Fails">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
+<Property name="Succeeds">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
+<Method name="Clear">
+<Internal>1</Internal>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ..Results.Clear())
+		$$$THROWONERROR(tSC, ..Fails.Clear())
+		$$$THROWONERROR(tSC, ..Succeeds.Clear())
+		Set ..Status = "succeed"
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="True">
+<Description>
+Assert that value is true.</Description>
+<FormalSpec>pValue:%Boolean</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("True", pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
+]]></Implementation>
+</Method>
+
+<Method name="False">
+<Description>
+Assert that value is false.</Description>
+<FormalSpec>pValue:%Boolean</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("False", 'pValue, ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))))
+]]></Implementation>
+</Method>
+
+<Method name="Ok">
+<Description>
+Assert that status is OK</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[
+	Set st="Status OK", actual = st
+	Set:$$$ISERR(pValue) actual = $System.Status.GetErrorText(pValue)
+	Do ..SetResults(..Test("Ok", $$$ISOK(pValue), ..Message(st, actual)))
+]]></Implementation>
+</Method>
+
+<Method name="NotOk">
+<Description>
+Assert that status is Not OK</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[
+	Set st="Status Not OK", actual = st
+	Set:$$$ISOK(pValue) actual = "Status OK"
+	Do ..SetResults(..Test("NotOk", $$$ISERR(pValue), ..Message(st, actual)))
+]]></Implementation>
+</Method>
+
+<Method name="Equal">
+<Description>
+Assert Should Be Equal</Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Equal", pValue = pExpected,..Message(pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Eql">
+<Description>
+Assert Should Be Equal</Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..Equal(pValue, pExpected)
+]]></Implementation>
+</Method>
+
+<Method name="Exactly">
+<Description>
+Assert Should Be Exact the same</Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Exactly", pValue = pExpected,..Message(pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Within">
+<Description><![CDATA[
+Assert inclusive numeric range (<= to and >= from): <br/>
+<br/>
+Do ..Within(User.Age, 5, 50)]]></Description>
+<FormalSpec>pValue,pMin,pMax</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Within", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Approximately">
+<Description><![CDATA[
+Assert floating point number near num within a +/- delta range.
+<br/>
+Do ..Approximately(3.49, 3.5, 0.01 )]]></Description>
+<FormalSpec>pValue:%Numeric,pExpected:%Numeric,pDelta:%Numeric=0.01</FormalSpec>
+<Implementation><![CDATA[	Do ..CloseTo(pValue, pExpected, pDelta)
+]]></Implementation>
+</Method>
+
+<Method name="CloseTo">
+<Description><![CDATA[
+Asserts that the target is equal expected, to within a +/- delta range.
+<br/>
+Do ..CloseTo(1.5, 1, 0.5)]]></Description>
+<FormalSpec>pValue:%Numeric,pExpected:%Numeric,pDelta:%Numeric=0.5</FormalSpec>
+<Implementation><![CDATA[
+	Set pMin = (pExpected - pDelta), 
+		pMax = (pExpected + pDelta)
+	Do ..SetResults(..Test("Close To", ((pValue >= pMin)&&(pValue <= pMax)),..Message(pMin_".."_pMax, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Above">
+<Description><![CDATA[
+Above(num) and GreaterThan(num)<br/>
+Assert numeric value above the given value (> num): <br/>
+Do ..Above(User.Age, 5)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Above", (pValue > pNum),..Message("Above " _ pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="GreaterThan">
+<Description><![CDATA[
+Assert numeric value above the given value (> num):<br/>
+Do ..GreaterThan(User.Age, 5)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Greater Than", (pValue > pNum),..Message("Greater than "_pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="IsAtLeast">
+<Description><![CDATA[
+Assert is greater than or equal to (>=) valueToBeAtLeast(num)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is at Least", (pValue >= pNum),..Message("Is at Least " _ pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Below">
+<Description><![CDATA[
+Below(num) and LessThan(num)<br/>
+Assert numeric value below the given value (< num)<br/>
+Do ..Below(User.Age, 50)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Below", (pValue < pNum),..Message(pNum_" > ", pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="LessThan">
+<Description><![CDATA[
+Assert numeric value below the given value (< num)<br/>
+Do ..LessThan(User.Age, 50)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Less Than", (pValue < pNum),..Message("Less than "_pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="IsAtMost">
+<Description><![CDATA[
+Assert is less than or equal to (<=) valueToBeAtMost (num)]]></Description>
+<FormalSpec>pValue,pNum</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is at Most", (pValue <= pNum),..Message("Is at Most " _ pNum, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="IsObject">
+<Description>
+Asserts that value is an object</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is Object", $IsObject(pValue),..Message("Is Object")))
+]]></Implementation>
+</Method>
+
+<Method name="IsNotObject">
+<Description>
+Asserts that value is NOT an object</Description>
+<FormalSpec>pValue</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("Is Not Object", '$IsObject(pValue),..Message("Is not an Object")))
+]]></Implementation>
+</Method>
+
+<Method name="TypeOf">
+<Description><![CDATA[
+Asserts that value’s type is pClassName
+<br/>
+Do ..TypeOf(pClass, "%RegisteredObject" )]]></Description>
+<FormalSpec>pValue,pClassName</FormalSpec>
+<Implementation><![CDATA[
+	Set got = $ClassName(pValue)
+	Do ..SetResults(..Test("Type Of", got = pClassName,..Message("Type of "_pClassName, got)))
+]]></Implementation>
+</Method>
+
+<Method name="NotTypeOf">
+<Description><![CDATA[
+Asserts that value’s type is <b>not</b> pClassName
+<br/>
+Do ..NotTypeOf(pClass, "%RegisteredObject" )]]></Description>
+<FormalSpec>pValue,pClassName</FormalSpec>
+<Implementation><![CDATA[
+	Set got = $ClassName(pValue)
+	Do ..SetResults(..Test("Not Type Of", got '= pClassName,..Message("Is Not type of "_pClassName, got)))
+]]></Implementation>
+</Method>
+
+<Method name="Regex">
+<Description><![CDATA[
+Assert given object matches a Regex<br/>
+Given: String, otherValue: regexp. Uses %Regex.Matcher:
+]]></Description>
+<FormalSpec>pValue,pRegex</FormalSpec>
+<Implementation><![CDATA[	Do ..Match(pValue, pRegex)
+]]></Implementation>
+</Method>
+
+<Method name="Match">
+<FormalSpec>pValue,pRegex</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+    Do ..SetResults(..Test("Match", matcher.Locate(),..Message("Match this pattern "_pRegex, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="NotMatch">
+<FormalSpec>pValue,pRegex</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New(pRegex)
+	Set matcher.Text = pValue
+    Do ..SetResults(..Test("Not Match", 'matcher.Locate(),..Message("Not Match this pattern "_pRegex, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="StartsWith">
+<Description><![CDATA[
+Assert that a string starts with str.
+<br/>
+Do ..StartsWith('foobar','foo')]]></Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New("^("_pExpected_")")
+	Set matcher.Text = pValue
+	
+	Do ..SetResults(..Test("StartsWith", matcher.Locate(),..Message("starts with "_pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="StartWith">
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..StartsWith(pValue, pExpected)
+]]></Implementation>
+</Method>
+
+<Method name="EndsWith">
+<Description><![CDATA[
+Assert that a string ends with str.
+<br/>
+Do ..EndsWith('foobar','foo')]]></Description>
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New(".*("_ pExpected _")$")
+	Set matcher.Text = pValue
+	Do ..SetResults(..Test("EndsWith", matcher.Locate(),..Message("ends with "_pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="EndWith">
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..EndsWith(pValue, pExpected)
+]]></Implementation>
+</Method>
+
+<Method name="EqualIgnoreCase">
+<FormalSpec>pValue,pExpected</FormalSpec>
+<Implementation><![CDATA[	Do ..SetResults(..Test("EqualIgnoreCase", $ZConvert(pValue,"l")=$ZConvert(pExpected,"l") ,..Message(pExpected, pValue)))
+]]></Implementation>
+</Method>
+
+<Method name="Message">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pExpected="",pGot="",pBR=""</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set:pBR="" pBR = " "
+	Quit "Expected: " _ $Get(pExpected) _ pBR _"Actual: "_$Get(pGot)
+]]></Implementation>
+</Method>
+
+<Method name="Test">
+<FormalSpec>pName:%String,pResult:%Boolean=0,pMessage:%String=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>Pierogi.Assert</ReturnType>
+<Implementation><![CDATA[
+	Set tAssert = ##class(Pierogi.Assert).Satisfy( ..Results.Count(), pName, pResult, pMessage )
+	Set:tAssert.Ok=$$$NO ..Status = "fail"
+	
+	Quit tAssert
+]]></Implementation>
+</Method>
+
+<Method name="Status">
+<Implementation><![CDATA[	Quit ..Status
+]]></Implementation>
+</Method>
+
+<Method name="SetResults">
+<FormalSpec>pAssert:Pierogi.Assert</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Do ..Results.Insert(pAssert)
+		
+		If pAssert.Ok {
+			Do ..Succeeds.Insert(pAssert)
+		} Else {
+			Do ..Fails.Insert(pAssert) 
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Pierogi.DocTest">
+<Super>%RegisteredObject</Super>
+<TimeChanged>64335,61158.153377</TimeChanged>
+<TimeCreated>64328,36995.575722</TimeCreated>
+
+<Property name="ProjectPackage">
+<Type>%String</Type>
+</Property>
+
+<Property name="Terminal">
+<Type>%Boolean</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Method name="Run">
+<FormalSpec><![CDATA[&pResults:Pierogi.Results=""]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Set:pResults="" pResults = ##class(Pierogi.Results).%New()
+	Try {
+		Set:..ProjectPackage="" tSC = $$$ERROR(5002,"Project Package missing")
+		Throw:$$$ISERR(tSC)
+		
+		Set tSql = "Select Parent As Class, Name As Method, Description As Block "_
+			" FROM %Dictionary.MethodDefinition "_
+			" Where parent %StartsWith ? " _
+			"   And Abstract = 0 " _
+			"   And (Description like '%Examples%' OR Description like '%<example>%') "_
+			" Order by SequenceNumber ",
+			tStatement =  ##class(%SQL.Statement).%New()
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		Set tRS = tStatement.execute(..ProjectPackage)
+		
+		While tRS.%Next() {
+			$$$THROWONERROR(tSC, ..ParseAndExecute(tRS.%Get("Class"), tRS.%Get("Method"), tRS.%Get("Block"), .pResults ))
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="ParseAndExecute">
+<Internal>1</Internal>
+<FormalSpec><![CDATA[pClass:%String,pMethod:%String,pBlock:%String,&pResults:Pierogi.Results]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set asserts = ##class(%ListOfObjects).%New(), 
+			failures = ##class(%ListOfObjects).%New(),
+			bFail = $$$NO
+		$$$THROWONERROR(tSC, ..GetCodeBlock(pBlock, .Code))
+		
+		For k=1:1:$ListLength(Code){
+			Set value = $List(Code,k)
+			If (($Find(value,">> ")) || ('$Find(value,"; "))){
+				Set value = $Replace(value,">> ","")
+				
+				// Do
+				Set action = $FIND($ZConvert(value,"U"),"DO ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"D ",0)
+				If action>0 {
+					Set action = $Extract(value,action,*)
+					Do @action
+				}
+				
+				// Set
+				Set action = $FIND($ZConvert(value,"U"),"SET ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"S ",0)
+				If action>0 {
+					Set action = $Extract(value,action,*)
+					Set @action
+				}
+				
+				// Write
+				Set action = $FIND($ZConvert(value,"U"),"WRITE ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"W ",0)
+				If action>0 {
+					Set action = "InternalDocTest2 = " _ $Extract(value,action,*)
+					Set @action
+					Set action = "InternalDocTest2"
+					Set InternalDocTest = @action
+					
+					Set tResult =$Replace($Replace($List(Code,k+1),$Char(9),""),"; ",""), 
+						tExpect = $Get(InternalDocTest)
+					Set tMessage = ##class(Pierogi.Assertions).Message(tExpect, tResult)
+					
+					Set assert = ##class(Pierogi.Assert).Satisfy(asserts.Count(), "", tExpect = tResult, tMessage)
+					$$$THROWONERROR(tSC, asserts.Insert(assert))
+					If assert.Ok=$$$NO {
+						Set bFail=$$$YES
+						$$$THROWONERROR(tSC, failures.Insert(assert))
+					}
+					
+					Kill InternalDocTest, InternalDocTest2
+				}
+			}
+		}
+			
+		If bFail {
+			Set pResults.Fail = pResults.Fail + 1
+			$$$THROWONERROR(tSC, pResults.Failures.Insert(##class(Pierogi.Failures).%New(pClass, pMethod, failures)))
+			
+			Do:..Terminal=$$$YES ##class(Pierogi.TerminalDisplay).Fail()
+		} Else {
+			Set pResults.Pass = pResults.Pass + 1
+			Do:..Terminal=$$$YES ##class(Pierogi.TerminalDisplay).Pass()
+
+		}
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		
+		Set pResults.Status = tSC,
+			tDescError = $System.Status.GetErrorText(tSC), 
+			pResults.Fail = pResults.Fail + 1,
+			failure = ##class(Pierogi.Failures).%New(pClass, pMethod) 
+			
+		Do failure.Asserts.Insert(##class(Pierogi.Assert).Satisfy(0, "", 0, tDescError)),
+			pResults.Failures.Insert(failure)
+			
+		// If got an error, report it and keep going
+		Set tSC = $$$OK
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="GetCodeBlock">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pBlock:%String,*pCodeBlock</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, pCodeBlock = ""
+	Try {
+		
+		Set block = $ListFromString(pBlock,$Char(13,10)),
+			pre = $$$NO
+			
+		For k=1:1:$ListLength(block) {
+			Set value = $List(block,k)
+			
+			Set:($Find(value,"<pre>")||$Find(value,"<example>")) pre = $$$YES
+			Set:($Find(value,"</pre>")||$Find(value,"</example>")) pre = $$$NO
+			
+			Set:pre=$$$YES $List(pCodeBlock, *+1) = value
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="%OnNew">
+<FormalSpec>pProjectPackage:%String="",pTerminalDisplay:%Boolean=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set:pProjectPackage'="" ..ProjectPackage = pProjectPackage
+	Set:pTerminalDisplay'="" ..Terminal = pTerminalDisplay
+	Quit $$$OK
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Pierogi.Ensemble.Core">
+<TimeChanged>64322,50260.004598</TimeChanged>
+<TimeCreated>64322,50260.004598</TimeCreated>
+
+<Method name="RunTimeInfo">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,*pConfigName:%String,*pClassName:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pConfigName = "", pClassName = ""
+		Set pConfigName = $get(^Ens.Runtime("DispatchName",pTargetDispatchName))
+		Set:pConfigName'="" pClassName =  $get(^Ens.Runtime("ConfigItem",pConfigName,"ClassName"))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="IsAService">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pClassName:%String</FormalSpec>
+<ReturnType>%Boolean</ReturnType>
+<Implementation><![CDATA[
+	Set tResult = $$$NO
+	Try {
+		Set class = ##class(%Dictionary.ClassDefinition).%OpenId(pClassName)
+		Set:($IsObject(class)&&($Find(class.Super,"Ens.BusinessService")>0)) tResult = $$$YES
+	} Catch tException {
+		Set tResult = $$$NO
+	}
+	Quit tResult
+]]></Implementation>
+</Method>
+
+<Method name="Call">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, pOutput = ""
+	Try {
+		$$$THROWONERROR(tSC, ..RunTimeInfo(pTargetDispatchName, .pConfigName, .pClassname))
+		Set:pClassname="" tSC = $$$ERROR(5002,pTargetDispatchName _ " Not Found")
+		Throw:$$$ISERR(tSC)
+		
+		If ..IsAService(pClassname) {
+			$$$THROWONERROR(tSC, ..CallWithBusinessService(pTargetDispatchName, pInput, .pOutput))
+		} Else {
+			$$$THROWONERROR(tSC, ..CallWithoutBusinessService(pTargetDispatchName, pInput, .pOutput))
+		}
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="CallWithBusinessService">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ##class(Ens.Director).CreateBusinessService(pTargetDispatchName,.tService))
+		Do tService.ProcessInput(pInput,.pOutput)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="CallWithoutBusinessService">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pTargetDispatchName:%String,pInput:%RegisteredObject,*pOutput:%RegisteredObject=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC,  ##Class(EnsLib.Testing.Service).SendTestRequest(pTargetDispatchName, pInput, .pOutput, .tSessionId, $$$YES))
+		Set ^CacheTemp.EnsRuntimeAppData($Namespace,"EnsLib.Testing.Service",tSessionId,"start") = $ZDatetime($ztimestamp,3,,3)
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Pierogi.Ensemble">
+<Super>Pierogi.Ensemble.Core,Pierogi.Spec</Super>
+<TimeChanged>64350,49327.451605</TimeChanged>
+<TimeCreated>64322,55563.726751</TimeCreated>
+</Class>
+
+
+<Class name="Pierogi.Expectations">
+<Super>%RegisteredObject,Pierogi.Assertions</Super>
+<TimeChanged>64324,30647.803428</TimeChanged>
+<TimeCreated>64323,53940.164625</TimeCreated>
+</Class>
+
+
+<Class name="Pierogi.Failures">
+<Super>%SerialObject</Super>
+<TimeChanged>64338,47697.968088</TimeChanged>
+<TimeCreated>64334,31349.624115</TimeCreated>
+
+<Property name="ClassName">
+<Type>%String</Type>
+</Property>
+
+<Property name="SpecTest">
+<Type>%String</Type>
+</Property>
+
+<Property name="Asserts">
+<Type>Pierogi.Assert</Type>
+<Collection>list</Collection>
+</Property>
+
+<Method name="Describe">
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set matcher = ##class(%Regex.Matcher).%New("(?<!^)(?=[A-Z])")
+	Set matcher.Text = ..SpecTest
+	Set $List(extract, *+1) = 1
+	While matcher.Locate() {
+		Set $List(extract, *+1) = matcher.Start
+    }
+    
+    If $ListLength(extract)>1 {
+	    For k=2:1:$ListLength(extract) {
+		    Set $List(describe, * +  1) = $Extract(..SpecTest, $List(extract, k-1), $List(extract, k)-1)
+		}
+	    Set $List(describe, * +  1) = $Extract(..SpecTest, $List(extract, k), *)
+    } Else {
+   		Set describe = $ListBuild(..SpecTest)
+    }
+	
+    Quit $ListToString(describe, " ")
+]]></Implementation>
+</Method>
+
+<Method name="%OnNew">
+<FormalSpec>pClassName:%String="",pSpecTest:%String="",pFailAsserts:%ListOfObjects=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set:pClassName'="" ..ClassName = pClassName
+		Set:pSpecTest'="" ..SpecTest = pSpecTest
+		If $IsObject(pFailAsserts) {
+			For k=1:1:pFailAsserts.Count() {
+				Set assertFail = pFailAsserts.GetAt(k)
+				$$$THROWONERROR(tSC, ..Asserts.Insert(assertFail))
+			}
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>FailuresState</State>
+<StreamLocation>^Pierogi.FailuresS</StreamLocation>
+<Data name="FailuresState">
+<Value name="1">
+<Value>ClassName</Value>
+</Value>
+<Value name="2">
+<Value>SpecTest</Value>
+</Value>
+<Value name="3">
+<Value>Asserts</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Pierogi.Results">
+<Description>
+Memento Class</Description>
+<Super>%SerialObject</Super>
+<TimeChanged>64335,49745.086712</TimeChanged>
+<TimeCreated>64324,54759.739853</TimeCreated>
+
+<Property name="Pass">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Property name="Fail">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Property name="Failures">
+<Type>Pierogi.Failures</Type>
+<Collection>list</Collection>
+</Property>
+
+<Property name="Status">
+<Type>%Status</Type>
+</Property>
+
+<Method name="Tests">
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[	Quit ..Pass + ..Fail
+]]></Implementation>
+</Method>
+
+<Method name="Add">
+<FormalSpec>pClass,pSpec:%String=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set:pClass.Status="succeed" ..Pass = ..Pass + 1
+		If pClass.Status="fail" {
+			Set ..Fail = ..Fail + 1
+			Set failure = ##class(Pierogi.Failures).%New($ClassName(pClass), pSpec, pClass.Fails)
+			
+			$$$THROWONERROR(tSC, ..Failures.Insert(failure))
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheSerialState</Type>
+<State>ResultsState</State>
+<StreamLocation>^Pierogi.ResultsS</StreamLocation>
+<Data name="ResultsState">
+<Value name="1">
+<Value>All</Value>
+</Value>
+<Value name="2">
+<Value>Pass</Value>
+</Value>
+<Value name="3">
+<Value>Fail</Value>
+</Value>
+<Value name="4">
+<Value>Test</Value>
+</Value>
+<Value name="5">
+<Value>Status</Value>
+</Value>
+<Value name="6">
+<Value>Failures</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="Pierogi.Spec">
+<Super>Pierogi.Expectations</Super>
+<TimeChanged>64342,57342.160223</TimeChanged>
+<TimeCreated>64324,33238.095575</TimeCreated>
+
+<Property name="Method">
+<Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Property name="Description">
+<Type>%String</Type>
+<Private>1</Private>
+</Property>
+
+<Method name="Describe">
+<FormalSpec>pContent:%String=""</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set ..Description = pContent
+	Quit pContent
+]]></Implementation>
+</Method>
+
+<Method name="BeforeSetup">
+</Method>
+
+<Method name="Before">
+</Method>
+
+<Method name="After">
+</Method>
+
+<Method name="AfterTeardown">
+</Method>
+</Class>
+
+
+<Class name="Pierogi.Suite">
+<Abstract>1</Abstract>
+<Super>%RegisteredObject</Super>
+<TimeChanged>64350,49376.787458</TimeChanged>
+<TimeCreated>64322,58801.760167</TimeCreated>
+
+<Parameter name="Terminal">
+<Default>1</Default>
+</Parameter>
+
+<Method name="SpecsPackage">
+<Description>
+Abstract method that should return the name of the package 
+where the test cases are located.</Description>
+<Abstract>1</Abstract>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="TestPackage">
+<Abstract>1</Abstract>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="Package">
+<Abstract>1</Abstract>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="ProjectPackage">
+<Description>
+Optional method that should return the name of the package 
+where the project classes are located.</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	Quit ""
+]]></Implementation>
+</Method>
+
+<Method name="GetSpecsPackage">
+<Internal>1</Internal>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	Set package = ..SpecsPackage()
+	Set:package="" package = ..TestPackage()
+	Set:package="" package = ..Package()
+	Quit package
+]]></Implementation>
+</Method>
+
+<Method name="Specs">
+<Description><![CDATA[
+Returns a list of specs and tests cases based on what is returned
+from the <method>Package</method> class method.]]></Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	Set package = ..GetSpecsPackage()
+	Quit:package=""
+	
+	Do $system.OBJ.GetPackageList(.classList, package)
+	Set class = $Order(classList(""))
+	Set testList = ""
+	
+	While class'="" {
+		Set:(($$issubclassof^%occCompile(class,"Pierogi.Spec")||$$issubclassof^%occCompile(class,"Pierogi.Ensemble"))
+		   && '##class(%Dictionary.ClassDefinition).%OpenId(class).Abstract) $List(testList, *+1) = class
+			
+		Set class = $Order(classList(class))
+	}
+	
+	Quit testList
+]]></Implementation>
+</Method>
+
+<Method name="RunnableMethods">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pClassname:%String,*pTests</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pTests="",
+			tSql = "Select Name from %Dictionary.MethodDefinition " _
+				" Where parent = ? " _
+				" AND ( Name %StartsWith 'Should' OR  Name %StartsWith 'Test') " _
+				" Order by SequenceNumber ",
+			tStatement =  ##class(%SQL.Statement).%New()
+			
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		Set tRS = tStatement.execute(pClassname)
+		
+		While tRS.%Next() {
+			Set $List(pTests, *+1) = tRS.%Get("Name")
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Run">
+<ClassMethod>1</ClassMethod>
+<ReturnType>Pierogi.Results</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
+	Try {
+		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
+		
+		// Run DocTest
+		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
+		
+		Set specsClass = ..Specs(), idx = 1
+		While (( idx > 0) && (idx <= $ListLength(specsClass))){
+			$$$THROWONERROR(tSC, ..RunTest($List(specsClass,idx), .tResults))
+			
+			Set idx = $Increment(idx)
+		}
+		
+		$$$THROWONERROR(tSC, ..BeforeTeardown(tResults, zhmBegin))
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = tSC
+	}
+	
+	Do ..Teardown(tResults)
+
+	Quit tResults
+]]></Implementation>
+</Method>
+
+<Method name="Only">
+<Description><![CDATA[
+During development it can be helpful to only run a few specific tests.
+<br>
+This can be accomplished using the Only method.]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pSpec:%String</FormalSpec>
+<ReturnType>Pierogi.Results</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
+	Try {
+		
+		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
+		
+		Set tSql = "Select Name As Method, Parent as Class from %Dictionary.MethodDefinition " _
+				" Where parent %StartsWith ? " _
+				" AND upper(Name) Like upper(?) " _
+				" Order by SequenceNumber ",
+			tStatement =  ##class(%SQL.Statement).%New()
+			
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		Set tRS = tStatement.execute(..GetSpecsPackage(), pSpec )
+		
+		While tRS.%Next() {
+			Set class = $ClassMethod(tRS.%Get("Class"),"%New")
+			$$$THROWONERROR(tSC, ..LifecycleHooks(class, $ListBuild(tRS.%Get("Method")), .tResults))
+		}
+		
+		$$$THROWONERROR(tSC, ..BeforeTeardown(tResults, zhmBegin))
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = tSC
+	}
+	Do ..Teardown(tResults)
+	
+	Quit tResults
+]]></Implementation>
+</Method>
+
+<Method name="LifecycleHooks">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[pClass,pRunnableMethods,&pResults:Pierogi.Results]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		// LifeCycleHooks
+		Do pClass.BeforeSetup()
+		// For Each Test
+		For k=1:1:$ListLength(pRunnableMethods){
+			Set test = $List(pRunnableMethods,k)
+
+			Do pClass.Before()
+			
+			$$$THROWONERROR(tSC, pClass.Clear())
+			Do $Method(pClass, test)
+			$$$THROWONERROR(tSC, pResults.Add(pClass, test))
+			
+			Do:(pClass.Status="fail" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Fail()
+			Do:(pClass.Status="succeed" && ..#Terminal) ##class(Pierogi.TerminalDisplay).Pass()
+			
+			Do pClass.After()
+		}
+		
+		Do pClass.AfterTeardown()
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="RunTest">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[pClass:%String,&pResults:Pierogi.Results]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set class = $ClassMethod(pClass,"%New")
+		#Dim class As Pierogi.Spec
+		$$$THROWONERROR(tSC, ..RunnableMethods(pClass, .specs))
+		$$$THROWONERROR(tSC, ..LifecycleHooks(class, specs, .pResults))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="RunDocTests">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&pResults:Pierogi.Results]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Quit:..ProjectPackage()="" tSC
+	Try {
+		Set DocTest = ##class(Pierogi.DocTest).%New(..ProjectPackage(), ..#Terminal)
+		$$$THROWONERROR(tSC, DocTest.Run(.pResults))
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Setup">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&pResults:Pierogi.Results,*pStartingTime]]></FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pStartingTime 	= $ZHorolog, 
+			pResults.Status = $$$OK
+
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Cls()
+			
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="BeforeTeardown">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pResults:Pierogi.Results,pStartingTime,*pDuration</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set pDuration = $ZHorolog - pStartingTime
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).FinishedIn(pDuration)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="Teardown">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pResults:Pierogi.Results</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		
+		Do:..#Terminal ##class(Pierogi.TerminalDisplay).Resume(pResults)
+		
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="Pierogi.TerminalDisplay">
+<TimeChanged>64345,58936.969099</TimeChanged>
+<TimeCreated>64328,35948.921536</TimeCreated>
+
+<Method name="Cls">
+<Description>
+Clean the terminal screen</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[	Write #,!,?2,"Baking Pierogies and Running Tests",!,*12,?4
+]]></Implementation>
+</Method>
+
+<Method name="Class">
+<Description>
+Display the class name</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pClassName:%String</FormalSpec>
+<Implementation><![CDATA[	Write !,*27,"[0m",pClassName,*27,"[0m",!
+]]></Implementation>
+</Method>
+
+<Method name="Pass">
+<Description>
+Print a green dot, when the test passes</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[	Write *27,"[32m",".",*27,"[0m"
+]]></Implementation>
+</Method>
+
+<Method name="Fail">
+<Description>
+Print a red "F", when the test fails</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[	Write *27,"[31m","F",*27,"[0m"
+]]></Implementation>
+</Method>
+
+<Method name="Resume">
+<Description>
+Display the test resume</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pResults:Pierogi.Results</FormalSpec>
+<Implementation><![CDATA[
+	If $$$ISERR(pResults.Status) {
+		Write !,?2,*27,..WarningColor(), "Ooops... Well, this is embarrassing...",	*27,"[0m",!
+		Write !,?4,$System.Status.GetErrorText(pResults.Status),!!
+	}
+	
+	If pResults.Tests() > 0 {
+	
+		Write !,?4,*27,"[0m",	pResults.Tests(),	" tests",	*27,"[0m"
+		Write !,?4,*27,"[32m",pResults.Pass,		" passed",	*27,"[0m"
+		If pResults.Fail > 0 {
+			Write *7 // Ring the Bell
+			Write !,?4,*27,"[31m", pResults.Fail,	" failed",	*27,"[0m"
+			// Write !!,?2,*27,"[31m", ..KeepingDoing(),	*27,"[0m",!
+			Do ..ShowFailures(pResults)
+		} Else {
+			Write !!,?2,*27,"[32m","Pass!", ..WellDone(),	*27,"[0m"
+		}
+	}
+	Write !
+]]></Implementation>
+</Method>
+
+<Method name="ShowFailures">
+<Description>
+Print the failures details</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pResults:Pierogi.Results</FormalSpec>
+<Implementation><![CDATA[
+	Set red = "[31m"
+	Write !,?1,"=>",*27,"[33m", " Failed Tests: ",	*27,"[0m"
+	Write *27,"[0m"," There were ",	*27,"[0m"
+	Write *27,red, pResults.Failures.Count(),*27,"[0m"
+	Write *27,"[0m"," failures.",*27,"[0m",!
+	
+	Set lastClass = ""
+	
+	While pResults.Failures.GetNext(.key) {
+		Set failure = pResults.Failures.GetAt(key)
+		#Dim failure as Pierogi.Failures
+		
+		If lastClass '= failure.ClassName {
+			Set lastClass = failure.ClassName
+			Write !!,?1,lastClass
+		}
+		
+		Write !,?3,key,") ",failure.Describe()
+		
+		While failure.Asserts.GetNext(.assert) {
+			If failure.Asserts.GetAt(assert).Name'="" {
+				Set assertDesc = "["_failure.Asserts.GetAt(assert).Number _"] "_
+					failure.Asserts.GetAt(assert).Msg
+			} Else {
+				Set assertDesc = failure.Asserts.GetAt(assert).Msg
+			}
+			Write:assertDesc'="" !,?6,*27,red,assertDesc,	*27,"[0m"
+		}
+	}
+]]></Implementation>
+</Method>
+
+<Method name="FinishedIn">
+<Description>
+Print the duration of the tests in seconds</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pDuration</FormalSpec>
+<Implementation><![CDATA[	Write !!,?2,*27,"[0m","Finished in ",pDuration," seconds",*27,"[0m",!
+]]></Implementation>
+</Method>
+
+<Method name="WellDone">
+<Description>
+Print a motivational message...</Description>
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	Set $List(quote, *+1)= " Great Job :)"
+	Set $List(quote, *+1)= " Have a Nice Day :D"
+	Set $List(quote, *+1)= " Do, or do not. There is no try. "_$Char(10,13)_
+							"  - Yoda"
+	Set $List(quote, *+1)= " We’re going to change the game."
+	Set $List(quote, *+1)= " A lot of people failed at what you accomplished,"_$Char(10,13)_
+							"   simply because they were busy finding problems"_$Char(10,13)_
+							"   while you were busy finding solutions. "_$Char(10,13)_
+							"  Well done."
+	Set $List(quote, *+1)= " Better a little which is well done, than a great deal imperfectly."
+	Set $List(quote, *+1)= " Well done."
+	Set $List(quote, *+1)= " Doing anything with perfection is like wearing an impeccable suit "_$Char(10,13)_
+							"  – the best way to make a great impression. "_$Char(10,13)_
+							"  Well done."
+	Set $List(quote, *+1)= " May success follow you, each and every place you go."_$Char(10,13)_
+							"   In the halo of prosperity, may you always glow."_$Char(10,13)_
+							"   May you get everything, that you could ever ask for."_$Char(10,13)_
+							"   Great times lie ahead for you, of that we are very sure."_$Char(10,13)_
+							"   Well done."
+	Set $List(quote, *+1)= " One job well done can be redemption for many a mistake of the past."_$Char(10,13)_
+							"  Keep it up."
+	Set $List(quote, *+1)= " Just keep swimming. "_$Char(10,13)_
+							"  -Dori"
+	Set $List(quote, *+1)= " The tipping point between a boy and a man is a job well done. "_$Char(10,13)_
+							"  Congratulations."
+	Set $List(quote, *+1)= " I always knew you that you have what it takes to be a real winner. "_$Char(10,13)_
+							"  Thanks for a great job."
+	Set $List(quote, *+1)= " Don't stop when you are tired. Stop when you are done!"
+	Set $List(quote, *+1)= " I always knew you that you have what it takes to be a real winner. "_$Char(10,13)_
+							"  Thanks for a great job."
+	Set $List(quote, *+1)= " I knew the rest of our journey would be great success. "_$Char(10,13)_
+							"  -Borat Sagdiyev"
+	Set $List(quote, *+1)= " Great success! "
+	 
+	Quit $List(quote,$Random($ListLength(quote))+1)
+]]></Implementation>
+</Method>
+
+<Method name="KeepingDoing">
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	Set $List(quote, *+1)= " Just keep swimming. "_$Char(10,13)_
+							"  -Dori"
+	Set $List(quote, *+1)= " If you're going through hell, keep going. "_$Char(10,13)_
+							"  -Winston Churchill "
+	Set $List(quote, *+1)= " You have to keep going and pursue your dreams. "_$Char(10,13)_
+							"  -Joey King"
+	Set $List(quote, *+1)= " Never gonna give you up, never gonna let you down."_$Char(10,13)_
+							"   Never gonna run around and desert you."_$Char(10,13)_
+							"   Never gonna make you cry, never gonna say goodbye."_$Char(10,13)_
+							"   Never gonna tell a lie and hurt you "_$Char(10,13)_
+							"  -Rick Astley"
+	Set $List(quote, *+1)= " I know it hurt's but stay strong!"
+	Set $List(quote, *+1)= " Remember why you started. Don't give up, find a way."
+	Set $List(quote, *+1)= " Never give up. Today is hard, tomorrow will be worse,"_$Char(10,13)_
+							"   but the day after tomorrow will be sunshine. "_$Char(10,13)_
+							"  -Jack Ma"
+	Set $List(quote, *+1)= " Never gonna give you up, never gonna let you down."_$Char(10,13)_
+							"   Never gonna run around and desert you."_$Char(10,13)_
+							"   Never gonna make you cry, never gonna say goodbye."_$Char(10,13)_
+							"   Never gonna tell a lie and hurt you "_$Char(10,13)_
+							"  -Rick Astley"
+	Set $List(quote, *+1)= " Never give up, have the passion. Don't be afraid. "_$Char(10,13)_
+							"  -Barbara Broccoli"
+	Set $List(quote, *+1)= " Never, never, never give up. "_$Char(10,13)_
+							"  -Winston Churchill"
+	Set $List(quote, *+1)= " Ha ha! "_$Char(10,13)_
+							"  -Nelson Muntz"
+	
+	Quit $List(quote,$Random($ListLength(quote))+1)
+]]></Implementation>
+</Method>
+
+<Method name="FailColor">
+<ClassMethod>1</ClassMethod>
+<Private>1</Private>
+<Implementation><![CDATA[	Quit "[31m"
+]]></Implementation>
+</Method>
+
+<Method name="PassColor">
+<ClassMethod>1</ClassMethod>
+<Private>1</Private>
+<Implementation><![CDATA[	Quit "[31m"
+]]></Implementation>
+</Method>
+
+<Method name="WarningColor">
+<ClassMethod>1</ClassMethod>
+<Private>1</Private>
+<Implementation><![CDATA[	Quit "[33m"
+]]></Implementation>
+</Method>
+</Class>
+
+
+</Export>
