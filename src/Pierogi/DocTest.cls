@@ -73,7 +73,7 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 					
 					Set tResult =$Replace($Replace($List(Code,k+1),$Char(9),""),"; ",""), 
 						tExpect = $Get(InternalDocTest)
-					Set tMessage = ##class(Pierogi.Assertions).Message(tExpect, tResult)
+					Set tMessage = ##class(Pierogi.Assertions).Message(tResult, tExpect)
 					
 					Set assert = ##class(Pierogi.Assert).Satisfy(asserts.Count(), "", tExpect = tResult, tMessage)
 					$$$THROWONERROR(tSC, asserts.Insert(assert))
