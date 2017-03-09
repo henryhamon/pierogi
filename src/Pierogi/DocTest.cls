@@ -45,7 +45,7 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 			Set value = $List(Code,k)
 			If (($Find(value,">> ")) || ('$Find(value,"; "))){
 				Set value = $Replace(value,">> ","")
-				
+				$$$THROWONERROR(tSC, ..RemoveComments(.value))
 				// Do
 				Set action = $FIND($ZConvert(value,"U"),"DO ")
 				Set:action=0 action = $FIND($ZConvert(value,"U"),"D ",0)
@@ -142,6 +142,21 @@ Method %OnNew(pProjectPackage As %String = "", pTerminalDisplay As %Boolean = ""
 	Set:pProjectPackage'="" ..ProjectPackage = pProjectPackage
 	Set:pTerminalDisplay'="" ..Terminal = pTerminalDisplay
 	Quit $$$OK
+}
+
+ClassMethod RemoveComments(ByRef pValue As %String) As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		Set commentLineDelimiters = $ListBuild("//",";")
+		For k=1:1:$ListLength(commentLineDelimiters){
+			Set pValue = $ListFromString(pValue, $List(commentLineDelimiters,k)) // <- comment
+			Set pValue = $List(pValue,1)
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 }
 
 }
