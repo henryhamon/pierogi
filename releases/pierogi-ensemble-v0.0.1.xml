@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-08 13:48:32">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-32) 2015.1.1 (Build 505U)" ts="2017-03-09 13:12:49">
 <Class name="Pierogi.Assert">
 <Super>%SerialObject</Super>
 <TimeChanged>64335,31796.307642</TimeChanged>
@@ -451,7 +451,7 @@ Do ..EndsWith('foobar','foo')]]></Description>
 
 <Class name="Pierogi.DocTest">
 <Super>%RegisteredObject</Super>
-<TimeChanged>64335,61158.153377</TimeChanged>
+<TimeChanged>64351,46922.364581</TimeChanged>
 <TimeCreated>64328,36995.575722</TimeCreated>
 
 <Property name="ProjectPackage">
@@ -509,7 +509,7 @@ Do ..EndsWith('foobar','foo')]]></Description>
 			Set value = $List(Code,k)
 			If (($Find(value,">> ")) || ('$Find(value,"; "))){
 				Set value = $Replace(value,">> ","")
-				
+				$$$THROWONERROR(tSC, ..RemoveComments(.value))
 				// Do
 				Set action = $FIND($ZConvert(value,"U"),"DO ")
 				Set:action=0 action = $FIND($ZConvert(value,"U"),"D ",0)
@@ -537,7 +537,7 @@ Do ..EndsWith('foobar','foo')]]></Description>
 					
 					Set tResult =$Replace($Replace($List(Code,k+1),$Char(9),""),"; ",""), 
 						tExpect = $Get(InternalDocTest)
-					Set tMessage = ##class(Pierogi.Assertions).Message(tExpect, tResult)
+					Set tMessage = ##class(Pierogi.Assertions).Message(tResult, tExpect)
 					
 					Set assert = ##class(Pierogi.Assert).Satisfy(asserts.Count(), "", tExpect = tResult, tMessage)
 					$$$THROWONERROR(tSC, asserts.Insert(assert))
@@ -616,6 +616,25 @@ Do ..EndsWith('foobar','foo')]]></Description>
 	Set:pProjectPackage'="" ..ProjectPackage = pProjectPackage
 	Set:pTerminalDisplay'="" ..Terminal = pTerminalDisplay
 	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="RemoveComments">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&pValue:%String]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	Set tSC = $$$OK
+	Try {
+		Set commentLineDelimiters = $ListBuild("//",";")
+		For k=1:1:$ListLength(commentLineDelimiters){
+			Set pValue = $ListFromString(pValue, $List(commentLineDelimiters,k)) // <- comment
+			Set pValue = $List(pValue,1)
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
 ]]></Implementation>
 </Method>
 </Class>
