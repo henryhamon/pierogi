@@ -34,7 +34,7 @@ Method Run(ByRef pResults As Pierogi.Results = "") As %Status
 
 Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
 {
-	Set tSC = $$$OK
+	Set tSC = $$$OK, value = ""
 	Try {
 		Set asserts = ##class(%ListOfObjects).%New(), 
 			failures = ##class(%ListOfObjects).%New(),
@@ -46,25 +46,27 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 			If (($Find(value,">> ")) || ('$Find(value,"; "))){
 				Set value = $Replace(value,">> ","")
 				$$$THROWONERROR(tSC, ..RemoveComments(.value))
+				
 				// Do
 				Set action = $FIND($ZConvert(value,"U"),"DO ")
-				Set:action=0 action = $FIND($ZConvert(value,"U"),"D ",0)
+				Set:action=0 action = ($Extract($ZConvert(value,"U"),1,2) = "D ")
 				If action>0 {
 					Set action = $Extract(value,action,*)
 					Do @action
+					
 				}
 				
 				// Set
-				Set action = $FIND($ZConvert(value,"U"),"SET ")
-				Set:action=0 action = $FIND($ZConvert(value,"U"),"S ",0)
+				Set action = $FIND($ZConvert(value,"U"),"SET ",0)
+				Set:action=0 action = ($Extract($ZConvert(value,"U"),1,2) = "S ")
 				If action>0 {
 					Set action = $Extract(value,action,*)
 					Set @action
 				}
 				
 				// Write
-				Set action = $FIND($ZConvert(value,"U"),"WRITE ")
-				Set:action=0 action = $FIND($ZConvert(value,"U"),"W ",0)
+				Set action = $FIND($ZConvert(value,"U"),"WRITE ",0)
+				Set:action=0 action = ($Extract($ZConvert(value,"U"),1,2) = "W ")
 				If action>0 {
 					Set action = "InternalDocTest2 = " _ $Extract(value,action,*)
 					Set @action
@@ -102,7 +104,7 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		
 		Set pResults.Status = tSC,
-			tDescError = $System.Status.GetErrorText(tSC), 
+			tDescError = value _ " -- " _ $System.Status.GetErrorText(tSC), 
 			pResults.Fail = pResults.Fail + 1,
 			failure = ##class(Pierogi.Failures).%New(pClass, pMethod) 
 			
