@@ -58,6 +58,7 @@ Method %OnNew(pClassName As %String = "", pSpecTest As %String = "", pFailAssert
 <Value>Asserts</Value>
 </Value>
 </Data>
+<SequenceNumber>6</SequenceNumber>
 <State>FailuresState</State>
 <StreamLocation>^Pierogi.FailuresS</StreamLocation>
 <Type>%Library.CacheSerialState</Type>

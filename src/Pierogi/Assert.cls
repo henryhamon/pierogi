@@ -57,6 +57,7 @@ ClassMethod Satisfy(pLastNumber As %Integer = 0, pName As %String, pResult As %B
 <Value>xyz</Value>
 </Value>
 </Data>
+<SequenceNumber>8</SequenceNumber>
 <State>AssertState</State>
 <StreamLocation>^Pierogi.AssertS</StreamLocation>
 <Type>%Library.CacheSerialState</Type>

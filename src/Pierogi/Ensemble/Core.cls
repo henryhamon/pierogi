@@ -19,7 +19,7 @@ ClassMethod IsAService(pClassName As %String) As %Boolean
 	Set tResult = $$$NO
 	Try {
 		Set class = ##class(%Dictionary.ClassDefinition).%OpenId(pClassName)
-		Set:($IsObject(class)&&($Find(class.Super,"Ens.BusinessService")>0)) tResult = $$$YES
+		Set:($IsObject(class)&&(($Find(class.Super,"Ens.BusinessService")>0)||($Find(class.Super,"EnsLib.SOAP.Service")>0))) tResult = $$$YES
 	} Catch tException {
 		Set tResult = $$$NO
 	}
@@ -50,6 +50,7 @@ ClassMethod CallWithBusinessService(pTargetDispatchName As %String, pInput As %R
 {
 	Set tSC = $$$OK
 	Try {
+		
 		$$$THROWONERROR(tSC, ##class(Ens.Director).CreateBusinessService(pTargetDispatchName,.tService))
 		Do tService.ProcessInput(pInput,.pOutput)
 		
@@ -63,8 +64,43 @@ ClassMethod CallWithoutBusinessService(pTargetDispatchName As %String, pInput As
 {
 	Set tSC = $$$OK
 	Try {
+		$$$THROWONERROR(tSC, ..EnableComponent(pTargetDispatchName, .pEnabled))
 		$$$THROWONERROR(tSC,  ##Class(EnsLib.Testing.Service).SendTestRequest(pTargetDispatchName, pInput, .pOutput, .tSessionId, $$$YES))
 		Set ^CacheTemp.EnsRuntimeAppData($Namespace,"EnsLib.Testing.Service",tSessionId,"start") = $ZDatetime($ztimestamp,3,,3)
+		If pEnabled=0 {
+			$$$THROWONERROR(tSC, ..DisableComponent(pTargetDispatchName, .pEnabled))
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod IsProductionOn() As %Boolean
+{
+	Quit ##class(Ens.Director).IsProductionRunning(.name)
+}
+
+ClassMethod EnableComponent(pTargetDispatchName As %String, Output pEnabled) As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		Set pEnabled = ##class(Ens.Director).IsItemEnabled(pTargetDispatchName, .tSC)
+		Throw:$$$ISERR(tSC)
+		If pEnabled=0 {
+			$$$THROWONERROR(tSC, ##class(Ens.Director).EnableConfigItem(pTargetDispatchName, 1))
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+	}
+	Quit tSC
+}
+
+ClassMethod DisableComponent(pTargetDispatchName As %String) As %Status
+{
+	Set tSC = $$$OK
+	Try {
+		$$$THROWONERROR(tSC, ##class(Ens.Director).EnableConfigItem(pTargetDispatchName, 0))
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}

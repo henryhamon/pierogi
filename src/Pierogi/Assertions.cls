@@ -27,13 +27,13 @@ Method Clear() As %Status [ Internal ]
 /// Assert that value is true.
 Method True(pValue As %Boolean)
 {
-	Do ..SetResults(..Test("True", pValue,..Message("True",$Select(pValue="":"False",0:"False",1:"True"))))
+	Do ..SetResults(..Test("True", pValue,..Message("True",$Select(pValue="":"False",pValue=0:"False",pValue=1:"True"))))
 }
 
 /// Assert that value is false.
 Method False(pValue As %Boolean)
 {
-	Do ..SetResults(..Test("False", 'pValue, ..Message("False",$Select(pValue="":"True",0:"True",1:"False"))))
+	Do ..SetResults(..Test("False", 'pValue, ..Message("False",$Select(pValue="":"True",pValue=0:"True",pValue=1:"False"))))
 }
 
 /// Assert that status is OK
@@ -224,6 +224,24 @@ Method EndWith(pValue, pExpected)
 Method EqualIgnoreCase(pValue, pExpected)
 {
 	Do ..SetResults(..Test("EqualIgnoreCase", $ZConvert(pValue,"l")=$ZConvert(pExpected,"l") ,..Message(pExpected, pValue)))
+}
+
+/// Asserts that value is empty.
+Method Empty(pValue)
+{
+	Do ..SetResults(..Test("Is Empty", pValue = "",..Message("Empty", $Case(pValue,"":"Empty",:"Not Empty"))))
+}
+
+/// Asserts that value is not empty.
+Method NotEmpty(pValue)
+{
+	Do ..SetResults(..Test("Is Not Empty", pValue '= "",..Message("Not Empty", $Case(pValue,"":"Empty",:"Not Empty"))))
+}
+
+/// Assert that expect throws an specific error
+Method Throws(pValue, pReferenceError)
+{
+	Do ..SetResults(..Test("Throws Error", pValue = pReferenceError,..Message( $System.Status.GetErrorText(pReferenceError), $System.Status.GetErrorText(pValue) )))
 }
 
 ClassMethod Message(pExpected = "", pGot = "", pBR = "") As %String

@@ -63,7 +63,7 @@ ClassMethod RunnableMethods(pClassname As %String, Output pTests) As %Status
 		Set pTests="",
 			tSql = "Select Name from %Dictionary.MethodDefinition " _
 				" Where parent = ? " _
-				" AND ( Name %StartsWith 'Should' OR  Name %StartsWith 'Test') " _
+				" AND ( Name %StartsWith 'Should' OR  Name %StartsWith 'Test' OR Name %StartsWith 'Deve' OR Name %StartsWith 'Deveria') " _
 				" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
 			
@@ -79,7 +79,49 @@ ClassMethod RunnableMethods(pClassname As %String, Output pTests) As %Status
 	Quit tSC
 }
 
-ClassMethod Run() As Pierogi.Results
+ClassMethod All() As Pierogi.Results
+{
+	Quit ..RunTests(..Specs())
+}
+
+ClassMethod Run(pRecipe As %String = "") As Pierogi.Results
+{
+	
+	Quit:pRecipe="" ..RunTests(..Specs())
+	
+	Set tSC = $$$OK, 
+		tResults = ##class(Pierogi.Results).%New()
+	Try {
+		Set package = ..GetSpecsPackage()
+		Set:package="" tSC = $$$ERROR(5114)
+		Throw:$$$ISERR(tSC)
+		
+		Set pTests="", recipes = "",
+			tSql = " Select Name FROM %Dictionary.ClassDefinition " _
+					" Where Abstract <> 1 " _
+					" AND (Super = 'Pierogi.Spec' OR Super = 'Pierogi.Ensemble') " _
+					" AND ID %StartsWith '"_package_"' " _
+					" AND NAME Like '%"_pRecipe_"%' ",
+			tStatement =  ##class(%SQL.Statement).%New()
+		
+		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
+		
+		
+		Set tRS = tStatement.execute()
+		
+		While tRS.%Next() {
+			Set $List(recipes, *+1) = tRS.%Get("Name")
+		}
+	} Catch tException {
+		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
+		Set tResults.Status = tSC
+	}
+	
+	Quit:$$$ISERR(tSC) tResults
+	Quit ..RunTests(recipes, pRecipe)
+}
+
+ClassMethod RunTests(pRecipes, pDocClass As %String = "") As Pierogi.Results [ Private ]
 {
 	Set tSC = $$$OK, 
 		tResults = ##class(Pierogi.Results).%New()
@@ -87,11 +129,11 @@ ClassMethod Run() As Pierogi.Results
 		$$$THROWONERROR(tSC, ..Setup(.tResults, .zhmBegin))
 		
 		// Run DocTest
-		$$$THROWONERROR(tSC, ..RunDocTests(.tResults))
+		$$$THROWONERROR(tSC, ..RunDocTests(.tResults, pDocClass))
 		
-		Set specsClass = ..Specs(), idx = 1
-		While (( idx > 0) && (idx <= $ListLength(specsClass))){
-			$$$THROWONERROR(tSC, ..RunTest($List(specsClass,idx), .tResults))
+		Set idx = 1
+		While (( idx > 0) && (idx <= $ListLength(pRecipes))){
+			$$$THROWONERROR(tSC, ..RunTest($List(pRecipes,idx), .tResults))
 			
 			Set idx = $Increment(idx)
 		}
@@ -121,7 +163,7 @@ ClassMethod Only(pSpec As %String) As Pierogi.Results
 		
 		Set tSql = "Select Name As Method, Parent as Class from %Dictionary.MethodDefinition " _
 				" Where parent %StartsWith ? " _
-				" AND upper(Name) Like upper(?) " _
+				" AND upper(Name) %StartsWith upper(?) " _
 				" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
 			
@@ -154,9 +196,9 @@ ClassMethod LifecycleHooks(pClass, pRunnableMethods, ByRef pResults As Pierogi.R
 		For k=1:1:$ListLength(pRunnableMethods){
 			Set test = $List(pRunnableMethods,k)
 
-			Do pClass.Before()
-			
 			$$$THROWONERROR(tSC, pClass.Clear())
+			Do pClass.Before()
+
 			Do $Method(pClass, test)
 			$$$THROWONERROR(tSC, pResults.Add(pClass, test))
 			
@@ -187,13 +229,13 @@ ClassMethod RunTest(pClass As %String, ByRef pResults As Pierogi.Results) As %St
 	Quit tSC
 }
 
-ClassMethod RunDocTests(ByRef pResults As Pierogi.Results) As %Status [ Private ]
+ClassMethod RunDocTests(ByRef pResults As Pierogi.Results, pDocClass As %String = "") As %Status [ Private ]
 {
 	Set tSC = $$$OK
 	Quit:..ProjectPackage()="" tSC
 	Try {
 		Set DocTest = ##class(Pierogi.DocTest).%New(..ProjectPackage(), ..#Terminal)
-		$$$THROWONERROR(tSC, DocTest.Run(.pResults))
+		$$$THROWONERROR(tSC, DocTest.Run(.pResults, pDocClass))
 	} Catch tException {
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 	}

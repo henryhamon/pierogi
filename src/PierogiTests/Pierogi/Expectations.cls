@@ -222,6 +222,15 @@ Method TestIsObject()
 	Do expectation.NotTypeOf(test,"%Library.ListOfObjects")
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.Throws($$$ERROR(9001,"teste"),$$$ERROR(9001,"teste"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	
+	Do expectation.Throws($$$ERROR(9001,"teste"),$$$ERROR(9002,"teste"))
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }
 
 Method TestStringComparison()
@@ -278,6 +287,23 @@ Method TestStringComparison()
 	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
 	
 	Do expectation.EqualIgnoreCase("abcdef","AbdEf")	
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.Empty("")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	Do expectation.Empty("Not Empty")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
+	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
+	
+	
+	Set expectation = ..ExpectationFactory()
+	Do expectation.NotEmpty("Not Empty")
+	Do ..ItShouldBeEqual(expectation.Results.Count(),1)
+	Do ..ItShouldBeTrue(expectation.Results.GetAt(1).Ok)
+	Do expectation.NotEmpty("")
 	Do ..ItShouldBeEqual(expectation.Results.Count(),2)
 	Do ..ItShouldBeFalse(expectation.Results.GetAt(2).Ok)
 }

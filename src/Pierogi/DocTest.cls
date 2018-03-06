@@ -5,7 +5,7 @@ Property ProjectPackage As %String;
 
 Property Terminal As %Boolean [ InitialExpression = 0 ];
 
-Method Run(ByRef pResults As Pierogi.Results = "") As %Status
+Method Run(ByRef pResults As Pierogi.Results = "", pClassName As %String = "") As %Status
 {
 	Set tSC = $$$OK
 	Set:pResults="" pResults = ##class(Pierogi.Results).%New()
@@ -17,9 +17,13 @@ Method Run(ByRef pResults As Pierogi.Results = "") As %Status
 			" FROM %Dictionary.MethodDefinition "_
 			" Where parent %StartsWith ? " _
 			"   And Abstract = 0 " _
-			"   And (Description like '%Examples%' OR Description like '%<example>%') "_
-			" Order by SequenceNumber ",
+			"   And (Description like '%Examples%' OR Description like '%<example>%') "
+		
+		Set:pClassName'="" tSql = tSql _ " And  Parent like '%"_ pClassName _"%' "
+		
+		Set tSql = tSql _	" Order by SequenceNumber ",
 			tStatement =  ##class(%SQL.Statement).%New()
+		
 		$$$THROWONERROR(tSC, tStatement.%Prepare(tSql))
 		Set tRS = tStatement.execute(..ProjectPackage)
 		
@@ -34,7 +38,7 @@ Method Run(ByRef pResults As Pierogi.Results = "") As %Status
 
 Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String, ByRef pResults As Pierogi.Results) As %Status [ Internal ]
 {
-	Set tSC = $$$OK, value = ""
+	Set tSC = $$$OK
 	Try {
 		Set asserts = ##class(%ListOfObjects).%New(), 
 			failures = ##class(%ListOfObjects).%New(),
@@ -46,27 +50,25 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 			If (($Find(value,">> ")) || ('$Find(value,"; "))){
 				Set value = $Replace(value,">> ","")
 				$$$THROWONERROR(tSC, ..RemoveComments(.value))
-				
 				// Do
 				Set action = $FIND($ZConvert(value,"U"),"DO ")
-				Set:action=0 action = ($Extract($ZConvert(value,"U"),1,2) = "D ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"D ",0)
 				If action>0 {
 					Set action = $Extract(value,action,*)
 					Do @action
-					
 				}
 				
 				// Set
-				Set action = $FIND($ZConvert(value,"U"),"SET ",0)
-				Set:action=0 action = ($Extract($ZConvert(value,"U"),1,2) = "S ")
+				Set action = $FIND($ZConvert(value,"U"),"SET ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"S ",0)
 				If action>0 {
 					Set action = $Extract(value,action,*)
 					Set @action
 				}
 				
 				// Write
-				Set action = $FIND($ZConvert(value,"U"),"WRITE ",0)
-				Set:action=0 action = ($Extract($ZConvert(value,"U"),1,2) = "W ")
+				Set action = $FIND($ZConvert(value,"U"),"WRITE ")
+				Set:action=0 action = $FIND($ZConvert(value,"U"),"W ",0)
 				If action>0 {
 					Set action = "InternalDocTest2 = " _ $Extract(value,action,*)
 					Set @action
@@ -104,7 +106,7 @@ Method ParseAndExecute(pClass As %String, pMethod As %String, pBlock As %String,
 		Set:$$$ISOK(tSC) tSC = tException.AsStatus()
 		
 		Set pResults.Status = tSC,
-			tDescError = value _ " -- " _ $System.Status.GetErrorText(tSC), 
+			tDescError = $System.Status.GetErrorText(tSC), 
 			pResults.Fail = pResults.Fail + 1,
 			failure = ##class(Pierogi.Failures).%New(pClass, pMethod) 
 			

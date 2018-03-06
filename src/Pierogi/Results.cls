@@ -53,6 +53,7 @@ Method Add(pClass, pSpec As %String = "") As %Status
 <Value>Failures</Value>
 </Value>
 </Data>
+<SequenceNumber>7</SequenceNumber>
 <State>ResultsState</State>
 <StreamLocation>^Pierogi.ResultsS</StreamLocation>
 <Type>%Library.CacheSerialState</Type>
